@@ -1,0 +1,11 @@
+{
+  "title": "RuntimeGuard: Attestation-Bound Runtime Enforcement with eBPF for AI Workloads — code and experimental package",
+  "upload_type": "software",
+  "description": "Complete experimental package: Kubernetes operator (RuntimeSecurityPolicy / RuntimePlacementEvidence CRDs), BPF-LSM node agent, kind and Azure deployment tooling, attack and measurement scripts, and raw data, processed results, summaries and exclusions for every experiment (admission-to-release closure, observation completeness, revocation, pod recreation, scale, performance, BPF-LSM enforcement, control-plane tampering).",
+  "creators": [
+    { "name": "Alaya, Ihsen" }
+  ],
+  "license": "Apache-2.0",
+  "keywords": ["eBPF", "BPF-LSM", "Kubernetes", "confidential computing", "attestation", "runtime security", "AI workloads"],
+  "access_right": "open"
+}

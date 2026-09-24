@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software or data, please cite it as below."
+title: "RuntimeGuard: Attestation-Bound Runtime Enforcement with eBPF for AI Workloads"
+type: software
+authors:
+  - family-names: Alaya
+    given-names: Ihsen
+license: Apache-2.0
+repository-code: "https://github.com/ihsenalaya/article2"
+keywords:
+  - eBPF
+  - BPF-LSM
+  - Kubernetes
+  - attestation
+  - runtime security
