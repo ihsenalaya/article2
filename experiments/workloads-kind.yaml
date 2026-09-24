@@ -1,0 +1,194 @@
+# Phase 5 evaluation workloads for kind functional/attack-scenario testing.
+#
+# Per the experiment plan: model *content* does not matter for these
+# functional tests, only that real weight-file loading happens
+# ("le contenu du modèle n'a pas d'importance, seul compte le chargement réel
+# du fichier de poids") — so these use a real, small (~940MB), Apache-2.0
+# licensed model (Qwen/Qwen2.5-0.5B-Instruct, downloaded from HuggingFace,
+# sha256 fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe —
+# see EXPERIMENTS_LOG.md Phase 5) copied onto both kind nodes at
+# /mnt/models/model.safetensors, rather than standing up a full vLLM/GPU
+# inference stack this dev machine cannot run (no GPU, ~7GB RAM shared with
+# other work). GPU device access is explicitly "simulable sur kind, à
+# revalider ensuite sur H100 réel" per the plan — device opens here target a
+# path that does not exist on this host, which is fine: the eBPF hooks
+# observe the openat/file_open syscall itself, not whether the device driver
+# backing it is real.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workloads
+---
+# "Allowed" destination — legitimate egress target for all 3 workloads.
+apiVersion: v1
+kind: Service
+metadata:
+  name: allowed-svc
+  namespace: workloads
+spec:
+  selector:
+    app: allowed-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allowed-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: allowed-endpoint }
+  template:
+    metadata:
+      labels: { app: allowed-endpoint }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+# "Forbidden" destination — attack scenario target (outbound connect to a
+# destination never present in any workload's NetworkEgressPolicy allowlist).
+apiVersion: v1
+kind: Service
+metadata:
+  name: forbidden-svc
+  namespace: workloads
+spec:
+  selector:
+    app: forbidden-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forbidden-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: forbidden-endpoint }
+  template:
+    metadata:
+      labels: { app: forbidden-endpoint }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+# Workload 1: pure LLM inference profile — real model weight file read, one
+# legitimate outbound connect, low file_open volume.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: llm-inference
+  namespace: workloads
+  labels: { workload: llm-inference }
+spec:
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /models/model.safetensors > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+  volumes:
+    - name: models
+      hostPath:
+        path: /mnt/models
+        type: Directory
+---
+# Workload 2: RAG pipeline profile — real Qdrant vector DB + a client reading
+# several small "document" files and querying Qdrant. Deliberately more
+# file_open volume and more distinct connect destinations than workload 1.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-documents
+  namespace: workloads
+data:
+  doc1.txt: "Runtime Guard binds enforcement to a signed placement decision."
+  doc2.txt: "The eBPF agent maps pod UID to cgroup ID to attribute events."
+  doc3.txt: "Attestation-bound runtime conformance is property P5."
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rag-pipeline
+  namespace: workloads
+  labels: { workload: rag-pipeline }
+spec:
+  containers:
+    - name: qdrant
+      image: qdrant/qdrant:v1.11.0
+      ports:
+        - containerPort: 6333
+    - name: client
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          apk add --no-cache curl >/dev/null 2>&1
+          while true; do
+            for f in /documents/*.txt; do cat "$f" > /dev/null 2>&1; done
+            curl -s -m 2 -o /dev/null http://localhost:6333/collections || true
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: documents
+          mountPath: /documents
+          readOnly: true
+  volumes:
+    - name: documents
+      configMap:
+        name: rag-documents
+---
+# Workload 3: GPU-profile workload (fine-tuning-like) — real model weight
+# read plus device-open attempts against /dev/nvidia0 (simulated: this host
+# has no real GPU, so the open fails ENOENT, but the openat/file_open
+# syscall itself is real and is exactly what the eBPF hooks observe/classify
+# by path prefix — see agent.bpf.c's is_device check). Revalidated against a
+# real device on H100 in Phase 9.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-workload
+  namespace: workloads
+  labels: { workload: gpu-workload }
+spec:
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /models/model.safetensors > /dev/null 2>&1
+            cat /dev/nvidia0 > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+  volumes:
+    - name: models
+      hostPath:
+        path: /mnt/models
+        type: Directory

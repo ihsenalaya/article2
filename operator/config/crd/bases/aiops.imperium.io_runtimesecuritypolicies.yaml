@@ -1,0 +1,513 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: runtimesecuritypolicies.aiops.imperium.io
+spec:
+  group: aiops.imperium.io
+  names:
+    kind: RuntimeSecurityPolicy
+    listKind: RuntimeSecurityPolicyList
+    plural: runtimesecuritypolicies
+    shortNames:
+    - rtsp
+    singular: runtimesecuritypolicy
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.enforcementMode
+      name: Mode
+      type: string
+    - jsonPath: .status.decision
+      name: Decision
+      type: string
+    - jsonPath: .status.evidenceMode
+      name: EvidenceMode
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: RuntimeSecurityPolicy is the Schema for the runtimesecuritypolicies
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              RuntimeSecurityPolicySpec defines the desired state of RuntimeSecurityPolicy.
+              One instance is generated per verified AIPlacementDecision from article 1.
+            properties:
+              agentIntegrity:
+                description: AgentIntegrity pins and verifies the eBPF agent's own
+                  image digest.
+                properties:
+                  expectedImageDigest:
+                    description: |-
+                      ExpectedImageDigest is the pinned agent image reference
+                      (repo@sha256:<64 hex chars>) the DaemonSet must run on this node.
+                    pattern: ^.+@sha256:[a-f0-9]{64}$
+                    type: string
+                  requireRTMRExtension:
+                    description: |-
+                      RequireRTMRExtension requests that, on platforms exposing a runtime
+                      measurement register (e.g. TDX RTMR), the agent's measurement be
+                      extended into it. Documented as a limitation when unavailable rather
+                      than silently skipped.
+                    type: boolean
+                required:
+                - expectedImageDigest
+                type: object
+              binding:
+                description: |-
+                  Binding carries the expected fields from the source placement token,
+                  used to detect drift between the signed decision and runtime reality.
+                properties:
+                  decisionEpoch:
+                    description: DecisionEpoch is the signed monotonic epoch of the
+                      source decision.
+                    format: int64
+                    type: integer
+                  decisionID:
+                    description: DecisionID is the immutable signed identity of the
+                      source decision.
+                    type: string
+                  decisionNonce:
+                    description: DecisionNonce is the signed nonce used to reject
+                      duplicate decision artifacts.
+                    type: string
+                  decisionVersion:
+                    description: DecisionVersion is the signed monotonic version of
+                      the source decision.
+                    format: int64
+                    type: integer
+                  imageDigest:
+                    description: ImageDigest is the expected workload image digest
+                      from the placement token payload.
+                    type: string
+                  modelDigest:
+                    description: ModelDigest is the expected model weights digest
+                      from the placement token payload.
+                    type: string
+                  nodeIdentity:
+                    description: NodeIdentity is the expected node identity from the
+                      placement token payload.
+                    type: string
+                  podSpecHash:
+                    description: PodSpecHash is the expected pod spec hash from the
+                      placement token payload.
+                    type: string
+                  podUID:
+                    description: PodUID is the pod UID the placement token was minted
+                      for.
+                    type: string
+                  runtimeClass:
+                    description: RuntimeClass is the expected runtime class from the
+                      placement token payload.
+                    type: string
+                type: object
+              bpfLock:
+                description: BPFLock configures the defense-in-depth BPF-lock hook.
+                properties:
+                  enabled:
+                    description: Enabled turns on the BPF-lock hook after the agent's
+                      authorized programs load.
+                    type: boolean
+                type: object
+              derivation:
+                description: Derivation records the deterministic D -> P hash link
+                  and expected T hash.
+                properties:
+                  decisionHash:
+                    description: DecisionHash is the SHA-256 digest of canonical JSON
+                      for the verified signed decision payload D.
+                    type: string
+                  derivationVersion:
+                    description: DerivationVersion identifies the deterministic policy
+                      derivation algorithm.
+                    type: string
+                  evidenceHash:
+                    description: EvidenceHash is the expected signed runtime evidence
+                      digest T declared by D.
+                    type: string
+                  policyHash:
+                    description: PolicyHash is the SHA-256 digest of canonical JSON
+                      for the deterministically derived policy P.
+                    type: string
+                  tokenHash:
+                    description: TokenHash is the SHA-256 digest of canonical JSON
+                      for the complete signed placement token.
+                    type: string
+                  upstreamPolicyHash:
+                    description: UpstreamPolicyHash is the policy hash value carried
+                      in the signed placement token, if present.
+                    type: string
+                type: object
+              deviceAccess:
+                description: DeviceAccess governs device-node (/dev/nvidia*) enforcement.
+                properties:
+                  allowedDevicePaths:
+                    description: |-
+                      AllowedDevicePaths lists device paths this pod is allowed to open
+                      (e.g. /dev/nvidia0, /dev/nvidiactl, /dev/nvidia-uvm).
+                    items:
+                      type: string
+                    type: array
+                  defaultAction:
+                    default: deny
+                    description: DefaultAction applies to any device path not matched
+                      by AllowedDevicePaths.
+                    enum:
+                    - allow
+                    - deny
+                    type: string
+                  requireConfidentialGPU:
+                    description: |-
+                      RequireConfidentialGPU mirrors the article 1
+                      ConfidentialGPURequirements convention: when true, device access is only
+                      conformant if the underlying evidence attests a confidential-computing GPU mode.
+                    type: boolean
+                  vendor:
+                    description: Vendor identifies the GPU vendor or stack, required
+                      when RequireConfidentialGPU is true.
+                    enum:
+                    - nvidia
+                    - amd
+                    - intel
+                    type: string
+                required:
+                - defaultAction
+                type: object
+              enforcementMode:
+                default: audit
+                description: |-
+                  EnforcementMode controls whether violations are only journaled
+                  (audit) or actively blocked (enforce). Must start at "audit" and only
+                  move to "enforce" once the mapping and hooks have been validated
+                  (Phase 4/5 of the experiment plan).
+                enum:
+                - audit
+                - enforce
+                type: string
+              exec:
+                description: Exec governs execve enforcement.
+                properties:
+                  allowedPaths:
+                    description: AllowedPaths lists absolute binary paths permitted
+                      to execve.
+                    items:
+                      type: string
+                    type: array
+                  defaultAction:
+                    default: deny
+                    description: DefaultAction applies to any execve target not matched
+                      by AllowedPaths/DeniedPaths.
+                    enum:
+                    - allow
+                    - deny
+                    type: string
+                  deniedPaths:
+                    description: |-
+                      DeniedPaths lists absolute binary paths explicitly denied, checked before
+                      AllowedPaths (deny takes precedence).
+                    items:
+                      type: string
+                    type: array
+                required:
+                - defaultAction
+                type: object
+              fileAccess:
+                description: FileAccess governs file_open enforcement.
+                properties:
+                  allowedPathPrefixes:
+                    description: |-
+                      AllowedPathPrefixes lists path prefixes permitted for file_open (e.g. model
+                      weights directory, /tmp scratch space).
+                    items:
+                      type: string
+                    type: array
+                  defaultAction:
+                    default: deny
+                    description: DefaultAction applies to any path not matched by
+                      AllowedPathPrefixes/DeniedPathPrefixes.
+                    enum:
+                    - allow
+                    - deny
+                    type: string
+                  deniedPathPrefixes:
+                    description: |-
+                      DeniedPathPrefixes lists path prefixes explicitly denied, checked before
+                      AllowedPathPrefixes.
+                    items:
+                      type: string
+                    type: array
+                required:
+                - defaultAction
+                type: object
+              networkEgress:
+                description: NetworkEgress governs connect() enforcement.
+                properties:
+                  allowedCIDRs:
+                    description: AllowedCIDRs lists destination CIDRs permitted for
+                      outbound connect().
+                    items:
+                      type: string
+                    type: array
+                  allowedPorts:
+                    description: AllowedPorts restricts allowed destination ports
+                      when set. Empty means any port.
+                    items:
+                      format: int32
+                      type: integer
+                    type: array
+                  defaultAction:
+                    default: deny
+                    description: DefaultAction applies to any destination not matched
+                      by AllowedCIDRs/DeniedCIDRs.
+                    enum:
+                    - allow
+                    - deny
+                    type: string
+                  deniedCIDRs:
+                    description: DeniedCIDRs lists destination CIDRs explicitly denied,
+                      checked before AllowedCIDRs.
+                    items:
+                      type: string
+                    type: array
+                required:
+                - defaultAction
+                type: object
+              placementDecisionRef:
+                description: |-
+                  PlacementDecisionRef references the source AIPlacementDecision
+                  (aiops.imperium.io/v1alpha1) this policy was derived from.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace of the referenced object. Defaults to the
+                      owner namespace.
+                    type: string
+                required:
+                - name
+                type: object
+              revocationTTLSeconds:
+                description: |-
+                  RevocationTTLSeconds bounds how quickly enforcement must react after a
+                  revocation is observed (e.g. from an article 1 AIRevocationPolicy or an
+                  equivalent local revocation source). Used to measure the "time to
+                  retract rules after revocation" metric (Phase 6).
+                format: int32
+                minimum: 1
+                type: integer
+              targetRef:
+                description: TargetRef identifies the workload or pod this policy
+                  governs.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace of the referenced object. Defaults to the
+                      owner namespace.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - agentIntegrity
+            - enforcementMode
+            - placementDecisionRef
+            - targetRef
+            type: object
+            x-kubernetes-validations:
+            - message: deviceAccess.vendor is required when deviceAccess.requireConfidentialGPU
+                is true
+              rule: '!(has(self.deviceAccess) && has(self.deviceAccess.requireConfidentialGPU)
+                && self.deviceAccess.requireConfidentialGPU) || (has(self.deviceAccess.vendor)
+                && self.deviceAccess.vendor != '''')'
+            - message: agentIntegrity.expectedImageDigest is required when enforcementMode
+                is enforce
+              rule: self.enforcementMode != 'enforce' || self.agentIntegrity.expectedImageDigest
+                != ''
+          status:
+            description: RuntimeSecurityPolicyStatus defines the observed state of
+              RuntimeSecurityPolicy.
+            properties:
+              agentImageDigestVerified:
+                description: |-
+                  AgentImageDigestVerified is true once the Operator has confirmed the
+                  DaemonSet on the target node runs exactly AgentIntegrity.ExpectedImageDigest.
+                type: boolean
+              appliedCgroupIDs:
+                description: AppliedCgroupIDs are the cgroup IDs to which the policy
+                  was applied.
+                items:
+                  type: string
+                type: array
+              appliedNodeName:
+                description: AppliedNodeName is the node whose agent applied this
+                  policy.
+                type: string
+              appliedPolicyGeneration:
+                description: |-
+                  AppliedPolicyGeneration is the RuntimeSecurityPolicy generation the node
+                  agent last applied to the target cgroup maps.
+                format: int64
+                type: integer
+              conditions:
+                description: Conditions captures policy propagation/validation state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              decision:
+                description: |-
+                  Decision reflects the outcome of verifying the source AIPlacementDecision's
+                  signature/hash before generating this policy.
+                enum:
+                - active
+                - rejected
+                - pending
+                type: string
+              enforcementReadyAt:
+                description: |-
+                  EnforcementReadyAt is set by the node agent after it successfully applies
+                  this policy to the target pod's cgroup maps.
+                format: date-time
+                type: string
+              enforcementReadyMonotonicNs:
+                description: |-
+                  EnforcementReadyMonotonicNs is the node-local CLOCK_MONOTONIC_RAW
+                  timestamp (nanoseconds since an arbitrary, node-specific epoch) at
+                  which the node agent captured EnforcementReadyAt. Unlike
+                  EnforcementReadyAt (a metav1.Time, which loses sub-second precision on
+                  the wire -- see artifacts/timing/timestamp-semantics.md), this is the
+                  authoritative source for t_p in temporal-closure measurements. Only
+                  meaningful compared against another CLOCK_MONOTONIC_RAW reading taken
+                  on the SAME node; never compare across nodes.
+                format: int64
+                type: integer
+              evidenceMode:
+                description: |-
+                  EvidenceMode reflects whether enforcement on the target node is backed
+                  by real BPF-LSM enforcement, a simulated/audit-only fallback, or is
+                  currently unverified.
+                enum:
+                - real
+                - simulated
+                - unverified
+                type: string
+              firstObservedOperationMonotonicNs:
+                description: |-
+                  FirstObservedOperationMonotonicNs is the bpf_ktime_get_ns() timestamp
+                  (kernel monotonic-since-boot nanoseconds) of the first hook event the
+                  node agent observed, via the eBPF ring buffer, for this pod's
+                  cgroup(s) since the current policy generation (AppliedPolicyGeneration)
+                  was applied. This is t_c: populated exclusively from real eBPF
+                  observations, never self-reported by the workload or the launcher (see
+                  artifacts/timing/timestamp-semantics.md). Reset to nil whenever a new
+                  policy generation is applied to this pod, so a stale prior
+                  generation's first-observed timestamp can never be mistaken for the
+                  current generation's.
+                format: int64
+                type: integer
+              observedGeneration:
+                description: ObservedGeneration is the last generation observed by
+                  the Operator.
+                format: int64
+                type: integer
+              rejectionReason:
+                description: RejectionReason explains a "rejected" Decision (e.g.
+                  signature verification failed).
+                type: string
+              verificationStatus:
+                description: VerificationStatus mirrors the article 1 AttestationEvidence
+                  convention.
+                enum:
+                - Verified
+                - Failed
+                - Unavailable
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

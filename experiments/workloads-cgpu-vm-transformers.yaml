@@ -1,0 +1,113 @@
+# Replacement for workloads-cgpu-vm-llm.yaml's vLLM container: same pod
+# shape, same service name/port, same attacker-gpu pod -- only the serving
+# engine changed, from vLLM to plain HuggingFace Transformers/PyTorch
+# (deploy/azure/transformers-qwen/), after the vLLM
+# investigation found HF produces correct output on this exact H100 while vLLM 0.26.0
+# does not, root cause not fully resolved.
+#
+# Image reference below is a placeholder -- build and push
+# deploy/azure/transformers-qwen/ to the project ACR as part of TASK-16/17
+# execution (not done as of this file's authoring; this is prep only).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workloads
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: llm-inference-real
+  namespace: workloads
+  labels: { workload: llm-inference-real }
+spec:
+  runtimeClassName: nvidia
+  imagePullSecrets:
+    - name: acr-pull-secret
+  initContainers:
+    - name: fetch-model
+      image: python:3.11-slim
+      command: ["sh", "-c"]
+      args:
+        - |
+          pip install --no-cache-dir -q huggingface_hub
+          python3 -c "
+          from huggingface_hub import snapshot_download
+          snapshot_download('Qwen/Qwen2.5-7B-Instruct', local_dir='/models/Qwen2.5-7B-Instruct')
+          "
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  containers:
+    - name: transformers-qwen
+      image: acrarticle2ebpftm2ogg.azurecr.io/transformers-qwen:latest # build from deploy/azure/transformers-qwen/
+      env:
+        - name: MODEL_DIR
+          value: /models/Qwen2.5-7B-Instruct
+        - name: PORT
+          value: "8000"
+      ports:
+        - containerPort: 8000
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 30
+  volumes:
+    - name: models
+      emptyDir:
+        sizeLimit: 30Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-inference-real
+  namespace: workloads
+spec:
+  selector:
+    workload: llm-inference-real
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# Attacker pod: unchanged from workloads-cgpu-vm-llm.yaml -- same node, no
+# allowlist, confirms attacks are denied while llm-inference-real continues
+# serving legitimately.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: attacker-gpu
+  namespace: workloads
+  labels: { workload: attacker-gpu }
+spec:
+  imagePullSecrets:
+    - name: acr-pull-secret
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /etc/shadow > /dev/null 2>&1
+            cat /dev/nvidia0 > /dev/null 2>&1
+            /bin/ls / > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://llm-inference-real.workloads.svc.cluster.local:8000/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: nvidia0
+          mountPath: /dev/nvidia0
+  volumes:
+    - name: nvidia0
+      hostPath:
+        path: /dev/nvidia0
+        type: CharDevice

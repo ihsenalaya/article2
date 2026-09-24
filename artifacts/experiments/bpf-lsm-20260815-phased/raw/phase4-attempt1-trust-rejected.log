@@ -1,0 +1,321 @@
+=== cleanup any stale objects from a prior attempt ===
+=== 1) creating g1-runner pod (pinned to the worker node, real BPF-LSM) ===
+pod/phase4-exec-test created
+=== waiting for pod to be scheduled ===
+pod_uid=cd7ba124-6333-417b-8d22-0c67e2bc8f57 node_name=vm-a2-cpucampaign-20260813-worker
+=== 2) minting signed decision D (requests enforce + allow=/bin/true via the new ExecPolicyRequest) ===
+=== 3) waiting for the operator to derive RuntimeSecurityPolicy/phase4-exec-test ===
+--- P (as actually derived by the real controller -- NOT hand-patched) ---
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-15T18:47:33Z"
+  generation: 2
+  name: phase4-exec-test
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: phase4-exec-test
+    uid: 1d50a603-1fa5-42e5-bf47-980804cc37f2
+  resourceVersion: "8316"
+  uid: ff3f7f85-8824-4ae8-9c79-d30fd90925ad
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:044759d3fec55a1fd343559cd21d1c66289eb32ce5ecf193b0cd816f5bf10a85
+  binding:
+    decisionEpoch: 1
+    decisionID: workloads/phase4-exec-test
+    decisionNonce: "1786819652314953083"
+    decisionVersion: 1
+    imageDigest: test-image-digest
+    modelDigest: test-model-digest
+    nodeIdentity: vm-a2-cpucampaign-20260813-worker
+    podSpecHash: test-pod-spec-hash
+    podUID: cd7ba124-6333-417b-8d22-0c67e2bc8f57
+    runtimeClass: kata-qemu-snp
+  bpfLock: {}
+  derivation:
+    decisionHash: c0ed11a65f794fe186d2b38e3a4d5af17776381f9d5225548f78828e0212540d
+    derivationVersion: runtime-guard-policy-derivation/v1
+    evidenceHash: test-evidence-hash
+    policyHash: ccd696c42d7eb3f2ae7d58ccf36746649db09f228023521249f7365b80f7cfc1
+    tokenHash: 266006c867ec8db08d5feb1bdff976e8a8c983fb63fd05c07d673bac6f742383
+    upstreamPolicyHash: test-policy-hash
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: enforce
+  exec:
+    allowedPaths:
+    - /bin/true
+    defaultAction: deny
+  fileAccess:
+    defaultAction: deny
+  networkEgress:
+    defaultAction: deny
+  placementDecisionRef:
+    name: phase4-exec-test
+    namespace: workloads
+  targetRef:
+    name: phase4-exec-test
+    namespace: workloads
+status:
+  appliedCgroupIDs:
+  - "10783"
+  - "10704"
+  appliedNodeName: vm-a2-cpucampaign-20260813-worker
+  appliedPolicyGeneration: 2
+  conditions:
+  - lastTransitionTime: "2026-08-15T18:47:33Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-15T18:47:34Z"
+    message: placement token verified against trust anchor
+    reason: Verified
+    status: "True"
+    type: Verified
+  - lastTransitionTime: "2026-08-15T18:47:34Z"
+    message: policy generation 2 applied to 2 cgroup(s) on node vm-a2-cpucampaign-20260813-worker
+    observedGeneration: 2
+    reason: PolicyApplied
+    status: "True"
+    type: EnforcementReady
+  decision: active
+  enforcementReadyAt: "2026-08-15T18:47:34Z"
+  enforcementReadyMonotonicNs: 4772823193931
+  evidenceMode: real
+  observedGeneration: 2
+  verificationStatus: Verified
+=== 4) waiting for g1-runner pod to complete ===
+final pod phase: Succeeded
+=== 5) g1-runner's own results ===
+[
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 1,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 1,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 2,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 2,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 3,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 3,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 4,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 4,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 5,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 5,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 6,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 6,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 7,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 7,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 8,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 8,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 9,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 9,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 10,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/true: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 10,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    }
+]
+=== 6) independent kernel ground truth on the worker (bpftool), for THIS pod's actual cgroup ===
+--- container ID for this pod ---
+3fbdf831f67a2536ce70a4a5b8b4351b3b50ea7873a1048785c736863088a1bb g1-runner

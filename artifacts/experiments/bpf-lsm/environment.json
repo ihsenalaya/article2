@@ -1,0 +1,25 @@
+{
+  "task": "TASK-10",
+  "experiment": "G — real BPF-LSM enforcement on CPU",
+  "git_commit_note": "operator/cmd/lsm-probe, operator/cmd/g1-runner (new tools), operator/Dockerfile.lsm-probe, operator/Dockerfile.g1-runner, ebpf-agent/Dockerfile.gen-bpf (throwaway toolchain image, see exclusions.md), and fixes to ebpf-agent/bpf/agent.bpf.c (LSM verifier rejections) and ebpf-agent/internal/bpfobjs/agent_x86_bpfel.{go,o} (regenerated) are uncommitted working-tree changes at run time, committed together with this experiment directory as the single Task 10 commit immediately after this file is written.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "kernel_config_bpf_lsm": "y (grep CONFIG_BPF_LSM /boot/config-6.8.0-1064-azure -> CONFIG_BPF_LSM=y, confirmed before any change)",
+  "active_lsm_before": "lockdown,capability,landlock,yama,apparmor",
+  "active_lsm_after": "lockdown,capability,landlock,yama,apparmor,bpf",
+  "grub_change": "Added lsm=lockdown,capability,landlock,yama,apparmor,bpf to GRUB_CMDLINE_LINUX (NOT GRUB_CMDLINE_LINUX_DEFAULT -- this Azure Ubuntu cloud image's /etc/default/grub.d/50-cloudimg-settings.cfg resets GRUB_CMDLINE_LINUX_DEFAULT=\"\" unconditionally on every update-grub, silently discarding anything placed there; GRUB_CMDLINE_LINUX is appended to instead, and survives). Applied via az vm run-command (user-confirmed before executing, since it required a worker-node reboot), followed by `update-grub` and `az vm restart`. Verified post-reboot via /proc/cmdline and /sys/kernel/security/lsm directly (not inferred from CONFIG_BPF_LSM alone, per the protocol's explicit warning).",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task10-v5@sha256:27207ea3a543cef4edaf35bf7bc47f1087c9f64e1c2862d6857388981ca9d22a",
+    "g1_runner": "acrarticle2ebpftm2ogg.azurecr.io/g1-runner:task10-v3@sha256:cdbead0243d69dc6932263899bdb8d2f40ea6a091fa9e2dc85e5508845bb1210",
+    "lsm_probe": "acrarticle2ebpftm2ogg.azurecr.io/lsm-probe:task10-v1@sha256:2d05b11631cecc07c2214568272bf475c5bc20b293861cbb79358b48fe25cbd6"
+  },
+  "ebpf_toolchain_note": "The pre-committed internal/bpfobjs/agent_x86_bpfel.{go,o} were regenerated for this task, against bpf/headers/vmlinux.h freshly dumped from THIS worker node's own live BTF (bpftool btf dump file /sys/kernel/btf/vmlinux format c, via kubectl debug node), using clang/llvm 14.x specifically (golang:1.25-bookworm base, not the default trixie/clang-19) -- matching the toolchain version recorded in EXPERIMENTS_LOG.md Phase 4 as originally used to build the previously-committed working object. A first regeneration attempt with clang 19 compiled without error but produced verifier-incompatible bytecode for an unrelated, unchanged function (hash_path's loop) -- see exclusions.md.",
+  "enforcement_mode_by_node": {
+    "vm-a2-cpucampaign-20260813-worker": "enforce (bpf confirmed in /sys/kernel/security/lsm; agent log: 'determined enforcement mode' mode=enforce)",
+    "vm-a2-cpucampaign-20260813-cp": "audit (bpf NOT added to this node's LSM list -- intentionally left unmodified as a within-cluster audit-mode control; agent log: mode=audit)"
+  },
+  "scope_correction": "Per the protocol's explicit instruction: this BPF-LSM enforce finding applies ONLY to this new Azure CPU worker node. The historical H100 campaign remains audit/observation-only and this experiment's results are never extended to it."
+}

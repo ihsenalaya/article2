@@ -1,0 +1,32 @@
+{
+  "A1_nominal": {
+    "description": "Cooperative launcher, no injected delay, sequential runs.",
+    "target_n": 30,
+    "script": "scripts/run-a1.sh",
+    "workload_critical_operation": "TCP connect (wget) to closure-target-svc.workloads.svc.cluster.local after observing the launcher's ready-file"
+  },
+  "A2_readiness_stress": {
+    "description": "Same as A1, but the agent's first policy application for this specific pod is artificially delayed via the experiment.article2.io/inject-ready-delay-ms pod annotation (test-harness-only hook, zero effect without the annotation).",
+    "delays_ms": [0, 50, 250, 1000],
+    "target_n_per_delay": 20,
+    "script": "scripts/run-a2.sh"
+  },
+  "A3_concurrency": {
+    "description": "Multiple pods created concurrently (same trial mechanics as A1), to measure margin distributions -- especially min(Delta_PR) -- under submission load.",
+    "concurrency_levels": [1, 10, 50],
+    "repetitions_per_level": 5,
+    "repetitions_note": "Experiment protocol does not specify an exact repetition count for A3 (only A1=30, A2=20/delay have explicit targets). 5 repetitions/level was chosen as a documented, honest scope decision under real time constraints, not concealed as a larger number.",
+    "script": "scripts/run-a3.sh"
+  },
+  "A4_noncooperative": {
+    "description": "Mandatory non-cooperative workload control: a real signed decision/policy exists (t_p is real), but the workload does NOT run the launcher, does NOT wait for EnforcementReady, and attempts its critical operation immediately at container start.",
+    "target_n": 10,
+    "script": "scripts/run-a4.sh"
+  },
+  "A5_no_policy_negative_control": {
+    "description": "No decision/policy is ever created. Determines externally (via RuntimeSecurityPolicy/RuntimePlacementEvidence existence, not workload self-report) whether the system produced ANY observation record for an unauthorized workload's attempted operation.",
+    "target_n": 10,
+    "script": "scripts/run-a5.sh"
+  },
+  "sample_size_discipline": "n = number of independent pod/run lifecycles, never assertions x runs. Every run_trial() invocation is exactly one independent unit."
+}

@@ -1,0 +1,20 @@
+ALLOW: ok=10 fail=0 / 10
+DENY: eperm=10 other=0 / 10
+No "SIDE EFFECT OCCURRED" lines printed (would indicate /tmp/deny-marker-file was created despite denial) -- none occurred across 10/10 deny reps.
+
+Counters (BPF_MAP_TYPE_ARRAY "counters", dumped via SIGUSR1 to the loader process)
+before this repetition batch (after the earlier single allow+deny+strace run):
+  counters[0=hook_entered]=600
+  counters[1=deny_decisions]=2
+  counters[2=allow_decisions]=598
+
+after this 10x10 repetition batch:
+  counters[0=hook_entered]=946
+  counters[1=deny_decisions]=12
+  counters[2=allow_decisions]=934
+
+deny_decisions delta = 12 - 2 = 10, exactly matching the 10 deny-target invocations in
+this batch -- no spurious and no missing deny decisions. hook_entered's larger delta
+(946-600=346, vs only 20 test execs) reflects that this minimal program hooks
+bprm_check_security system-wide (no cgroup scoping, unlike RuntimeGuard's own hook),
+so ordinary system activity (cron, sshd, systemd) also passes through it.

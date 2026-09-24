@@ -1,0 +1,34 @@
+NAMESPACE                       NAME                                                             READY   STATUS    RESTARTS   AGE   IP              NODE                                NOMINATED NODE   READINESS GATES
+kube-system                     pod/calico-kube-controllers-65dcc554ff-62bzh                     1/1     Running   0          20m   192.168.173.1   vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/calico-node-88xp5                                            1/1     Running   0          20m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/calico-node-q5469                                            1/1     Running   0          20m   10.43.1.20      vm-a2-cpucampaign-20260813-worker   <none>           <none>
+kube-system                     pod/coredns-55cb58b774-86b2r                                     1/1     Running   0          20m   192.168.173.3   vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/coredns-55cb58b774-wpnw6                                     1/1     Running   0          20m   192.168.173.2   vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/etcd-vm-a2-cpucampaign-20260813-cp                           1/1     Running   0          21m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/kube-apiserver-vm-a2-cpucampaign-20260813-cp                 1/1     Running   0          21m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/kube-controller-manager-vm-a2-cpucampaign-20260813-cp        1/1     Running   0          21m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/kube-proxy-2kssc                                             1/1     Running   0          20m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+kube-system                     pod/kube-proxy-7wdxm                                             1/1     Running   0          20m   10.43.1.20      vm-a2-cpucampaign-20260813-worker   <none>           <none>
+kube-system                     pod/kube-scheduler-vm-a2-cpucampaign-20260813-cp                 1/1     Running   0          21m   10.43.1.10      vm-a2-cpucampaign-20260813-cp       <none>           <none>
+runtime-guard-agent-system      pod/runtime-guard-agent-fhkjs                                    1/1     Running   0          68s   192.168.173.5   vm-a2-cpucampaign-20260813-cp       <none>           <none>
+runtime-guard-agent-system      pod/runtime-guard-agent-xlvp7                                    1/1     Running   0          67s   192.168.87.68   vm-a2-cpucampaign-20260813-worker   <none>           <none>
+runtime-guard-operator-system   pod/runtime-guard-operator-controller-manager-5f56974687-4r8b9   1/1     Running   0          72s   192.168.87.67   vm-a2-cpucampaign-20260813-worker   <none>           <none>
+
+NAMESPACE     NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE   SELECTOR
+default       service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP                  21m   <none>
+kube-system   service/kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   21m   k8s-app=kube-dns
+
+NAMESPACE                    NAME                                 DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE     CONTAINERS    IMAGES                                                                            SELECTOR
+kube-system                  daemonset.apps/calico-node           2         2         2       2            2           kubernetes.io/os=linux   21m     calico-node   docker.io/calico/node:v3.28.2                                                     k8s-app=calico-node
+kube-system                  daemonset.apps/kube-proxy            2         2         2       2            2           kubernetes.io/os=linux   21m     kube-proxy    registry.k8s.io/kube-proxy:v1.30.14                                               k8s-app=kube-proxy
+runtime-guard-agent-system   daemonset.apps/runtime-guard-agent   2         2         2       2            2           <none>                   4m21s   agent         acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813   app=runtime-guard-agent
+
+NAMESPACE                       NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS                IMAGES                                                                          SELECTOR
+kube-system                     deployment.apps/calico-kube-controllers                     1/1     1            1           21m     calico-kube-controllers   docker.io/calico/kube-controllers:v3.28.2                                       k8s-app=calico-kube-controllers
+kube-system                     deployment.apps/coredns                                     2/2     2            2           21m     coredns                   registry.k8s.io/coredns/coredns:v1.11.3                                         k8s-app=kube-dns
+runtime-guard-operator-system   deployment.apps/runtime-guard-operator-controller-manager   1/1     1            1           4m23s   manager                   acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813   control-plane=controller-manager
+
+NAMESPACE                       NAME                                                                   DESIRED   CURRENT   READY   AGE     CONTAINERS                IMAGES                                                                          SELECTOR
+kube-system                     replicaset.apps/calico-kube-controllers-65dcc554ff                     1         1         1       20m     calico-kube-controllers   docker.io/calico/kube-controllers:v3.28.2                                       k8s-app=calico-kube-controllers,pod-template-hash=65dcc554ff
+kube-system                     replicaset.apps/coredns-55cb58b774                                     2         2         2       20m     coredns                   registry.k8s.io/coredns/coredns:v1.11.3                                         k8s-app=kube-dns,pod-template-hash=55cb58b774
+runtime-guard-operator-system   replicaset.apps/runtime-guard-operator-controller-manager-5f56974687   1         1         1       4m23s   manager                   acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813   control-plane=controller-manager,pod-template-hash=5f56974687

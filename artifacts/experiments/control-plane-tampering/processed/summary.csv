@@ -1,0 +1,3 @@
+condition,n,n_as_expected,rate_as_expected
+valid_D_correct_P,5,5,1.0
+valid_D_tampered_P,5,5,1.0

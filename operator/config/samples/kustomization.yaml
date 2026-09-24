@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- aiops_v1alpha1_runtimesecuritypolicy.yaml
+- aiops_v1alpha1_runtimeplacementevidence.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

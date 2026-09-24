@@ -1,0 +1,33 @@
+{
+  "C1_parameterized_polling": {
+    "description": "Measures Delta_detect (t_rev -> t_seen, AIPlacementDecision deletion to the agent's 'revoked access' log line) across five --poll-interval conditions via a fast repeated revoke/reauthorize loop on one reused pod per condition (same pattern as the historical experiments/metrics/measure_revocation.sh), plus, at reduced n, Delta_evidence (t_rev -> t_T, first RuntimePlacementEvidence with AuthorizationState=revoked).",
+    "poll_intervals": ["0.5s", "1s", "2s", "5s", "10s"],
+    "fast_loop_reps_per_interval": 8,
+    "slow_loop_reps_per_interval": 3,
+    "reps_note": "Experiment protocol targets >=20 runs/condition 'if practical'. n=8 (fast)/n=3 (slow) per condition is a documented, honest scope decision under real time constraints on a single live billed cluster running many experiments serially, not concealed as a larger number -- see summary.md limitations.",
+    "t_invalid_note": "Not separately instrumented as a distinct timestamp: RevokeCgroup() is called synchronously, in the same function, immediately before the 'revoked access' log line (revokeTrackedPolicyLocked in ebpf-agent/cmd/agent/main.go) -- no I/O or scheduling point separates them, so t_invalid == t_seen to within the log timestamp's own resolution. Confirmed by code inspection, stated explicitly rather than silently folded into Delta_detect.",
+    "scripts": ["scripts/run-c1.sh"]
+  },
+  "C2_watch_vs_poll": {
+    "description": "Holds --poll-interval fixed at a deliberately slow 10s and toggles the agent's opt-in --watch-revocation path, measuring Delta_detect the same way as C1's fast loop, to directly compare event-driven vs fixed-interval revocation detection under an otherwise-identical configuration.",
+    "poll_interval_fixed": "10s",
+    "conditions": ["poll-only (watch_revocation=false)", "watch-enabled (watch_revocation=true)"],
+    "reps_per_condition": 10,
+    "scripts": ["scripts/run-c2.sh"]
+  },
+  "C3_stale_evidence_demonstration": {
+    "description": "Captures a real, signed RuntimePlacementEvidence snapshot emitted while a pod is authorized and conform, then revokes the underlying decision, waits well past propagation, and verifies the CAPTURED (now-stale) snapshot with verify-evidence twice -- once with --max-authorization-age=0 (models a verifier using only pre-Task-06 checks, since AuthorizationState/LastAuthorizationSync did not exist as signed fields before this task) and once with the default (15s) -- to directly answer Q7: can a cryptographically valid evidence object remain semantically stale with respect to authorization.",
+    "wait_seconds_before_check": 90,
+    "runs": 1,
+    "runs_note": "n=1 controlled demonstration trial, not a repeated-measures statistic -- this sub-experiment answers a yes/no existence question (can this state be reached and accepted), not a distribution.",
+    "scripts": ["scripts/run-c3.sh"]
+  },
+  "C4_evidence_semantics": {
+    "description": "Not a separate script -- implemented as signed schema additions (AuthorizationState, LastAuthorizationSync, and RevokedAt moved into the signed payload) evaluated by every one of C1/C2/C3's captured evidence objects, and by dedicated unit tests (operator/cmd/verify-evidence/main_test.go TestVerifyEvidenceRejectsStaleAuthorizationSync, TestVerifyEvidence_AuthorizedAndCompliant_FalseWhenRevoked).",
+    "source": "operator/api/v1alpha1/runtimeplacementevidence_types.go, operator/pkg/evidence/evidence.go, operator/cmd/verify-evidence/main.go"
+  },
+  "C5_acceptance_condition": {
+    "description": "Not a separate script -- addressed by C1's measured Delta_detect distributions (the explicit, measured upper bound C5 asks for when an absolute guarantee cannot be provided) combined with the honest trust-boundary statement in summary.md: since revocation itself is unauthenticated Kubernetes API state (Task 00 audit), the measured bound holds under an honest-but-possibly-slow control plane, not against a malicious one suppressing/delaying the revocation signal itself."
+  },
+  "sample_size_discipline": "n = number of independent revoke/detect (or revoke/evidence) cycles, never assertions x runs."
+}

@@ -1,0 +1,24 @@
+{
+  "task": "TASK-06",
+  "experiment": "C — revocation and evidence semantics",
+  "git_commit": "5685af5",
+  "git_commit_note": "5685af5 (Task 05) was HEAD while raw/ runs executed -- the implementation changes this experiment depends on (watch-based revocation path, signed AuthorizationState/LastAuthorizationSync/RevokedAt, verify-evidence authorization-currency check) were uncommitted working-tree changes at run time, built into the images referenced below, and are committed together with this experiment directory as the single Task 06 commit immediately after this file is written.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task06@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5"
+  },
+  "note_on_agent_image": "Rebuilt from task05 to add: an opt-in Kubernetes watch-based revocation path (--watch-revocation/WATCH_REVOCATION, watchRevocationLoop in ebpf-agent/cmd/agent/main.go), shared with the pre-existing poll-based cleanup path via revokeTrackedPolicyLocked so both mechanisms apply the identical revoke action and differ only in detection latency; trackedPod gained lastAuthSync, updated every poll cycle a policy is confirmed still present; emitEvidence now signs AuthorizationState, LastAuthorizationSync, and (newly) RevokedAt as part of the Ed25519-signed payload (RevokedAt was status-only/unsigned before Task 06).",
+  "note_on_operator_image": "Rebuilt to add AuthorizationState (authorized;revoked;unknown) and LastAuthorizationSync to RuntimePlacementEvidenceStatus; verify-evidence gained --max-authorization-age (default 15s, 3x the agent's default 5s poll interval), the authorization-currency and authorization-state-present checks, and a top-level AuthorizedAndCompliant field in the verification report that is deliberately reported separately from Valid (Task 06/C4: a correctly-signed, honestly-revoked evidence object can still be Valid=true while AuthorizedAndCompliant=false).",
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md; Task 10 addresses real BPF-LSM enforcement separately)",
+  "nodes": ["vm-a2-cpucampaign-20260813-cp", "vm-a2-cpucampaign-20260813-worker"],
+  "evidence_tick_interval_seconds": 30,
+  "default_poll_interval_seconds": 5,
+  "revocation_mechanism": {
+    "channel": "unauthenticated Kubernetes API state (AIPlacementDecision deletion, triggering owner-reference garbage collection of the RuntimeSecurityPolicy) -- no cryptographically signed revocation record exists; see Task 00 audit and this experiment's summary.md for the full trust-boundary discussion",
+    "status_transition_note": "AIPlacementDecision.Status.Decision=\"revoked\" (without deletion) is never consulted by the agent and has no enforcement effect on its own -- confirmed by code inspection (grep of ebpf-agent/ finds no reference to RuntimeSecurityPolicy.Status.Decision); only object disappearance (via owner-ref GC on deletion) is the actual revocation channel exercised anywhere in this codebase, including this experiment's scripts."
+  }
+}

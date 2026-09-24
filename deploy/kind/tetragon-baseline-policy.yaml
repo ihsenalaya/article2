@@ -1,0 +1,49 @@
+# TracingPolicy for the Tetragon baseline comparison (Phase 6). Mirrors, as
+# closely as Tetragon's generic kprobe model allows, the same 3 attack
+# scenarios (A1 exec, A2 file open, A3 connect) validated against our own
+# agent in Phase 5. Tetragon's kprobe selectors filter on Linux namespaces
+# (Uts/Ipc/Mnt/Pid/Net/...), not Kubernetes namespaces directly — confirmed
+# by the API server's own validation error on a first attempt that used
+# `matchNamespaces: workloads`. Kubernetes pod/namespace scoping is instead
+# applied when reading events back out (`tetra getevents`), which enriches
+# every event with pod/namespace/container metadata automatically.
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: article2-baseline-comparison
+#
+# `fd_install` (the generic file-open hook) was tried and dropped: it is an
+# UNSCOPED kernel-wide kprobe (Tetragon's kprobe selectors filter on Linux
+# namespaces, not Kubernetes pod/cgroup — see comment above), so on this
+# WSL2/kind shared-kernel dev host it fired for every open() on the ENTIRE
+# machine (~2000 events in a few seconds of passive observation, see
+# EXPERIMENTS_LOG.md Phase 6), which OOM-killed the Tetragon pod even at a
+# 250Mi memory limit. This is itself a real, documented finding: our own
+# agent's cgroup lookup happens INSIDE the eBPF program before deciding
+# whether to emit anything to userspace (see bpf/agent.bpf.c
+# get_cgroup_config), giving it a cheap in-kernel early-exit that a naive
+# unscoped kprobe policy does not have.
+spec:
+  kprobes:
+    - call: "sys_execve"
+      syscall: true
+      args:
+        - index: 0
+          type: "string"
+    - call: "tcp_connect"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+    - call: "tcp_close"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+    - call: "tcp_sendmsg"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+        - index: 2
+          type: int

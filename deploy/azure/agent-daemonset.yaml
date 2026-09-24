@@ -1,0 +1,116 @@
+# Runtime Guard node eBPF agent — DaemonSet manifest for the real AKS
+# environment (Phase 9). Same as deploy/kind/agent-daemonset.yaml except:
+# - image points at ACR (acrarticle2ebpftm2ogg.azurecr.io), not a kind-local tag
+# - AGENT_IMAGE_DIGEST is the real ACR digest (see EXPERIMENTS_LOG.md Phase 9
+#   for how it was resolved), not the kind-local one
+# `tolerations: - operator: Exists` (unchanged) already covers the
+# `sku=gpu-confidential:NoSchedule` taint on the H100 node pool, so the
+# DaemonSet runs on all 3 real nodes (2 system + 1 GPU) without further
+# changes.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: runtime-guard-agent-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-guard-agent
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/status"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-guard-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: runtime-guard-agent
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-agent
+    namespace: runtime-guard-agent-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+  labels:
+    app: runtime-guard-agent
+spec:
+  selector:
+    matchLabels:
+      app: runtime-guard-agent
+  template:
+    metadata:
+      labels:
+        app: runtime-guard-agent
+    spec:
+      serviceAccountName: runtime-guard-agent
+      hostPID: true
+      containers:
+        - name: agent
+          image: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:phase9
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CGROUP_ROOT
+              value: /host/sys/fs/cgroup
+            - name: LSM_PATH
+              value: /host/sys/kernel/security/lsm
+            - name: BPF_LOCK_ENABLED
+              # BPF-LSM IS active on the AKS system-node image: /proc/cmdline
+              # carries `lsm=bpf,lockdown,capability,landlock,yama,apparmor`
+              # and /sys/kernel/security/lsm reports
+              # `lockdown,capability,bpf,landlock,yama,apparmor` (verified
+              # 2026-08-01 on aks-system-21501763-vmss000000). An earlier
+              # preflight checked ONLY the GPU node (confidential `-fde`
+              # kernel) and wrongly generalised "BPF-LSM unavailable" to the
+              # whole cluster -- see EXPERIMENTS_LOG.md Phase 9. This is what
+              # makes real enforce-mode (actual blocking) demonstrable here,
+              # unlike on kind.
+              value: "true"
+            - name: AGENT_IMAGE_DIGEST
+              value: "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:2757b2bb777c7ffa198e8b911be2397a40bf20f34ad437de0c74bee216ee66ef"
+            - name: AGENT_SIGNING_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: runtime-guard-agent-signing-key
+                  key: privateKeyHex
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host/sys
+              readOnly: true
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+      tolerations:
+        - operator: Exists

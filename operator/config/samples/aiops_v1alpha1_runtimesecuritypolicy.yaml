@@ -1,0 +1,12 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: runtimesecuritypolicy
+    app.kubernetes.io/instance: runtimesecuritypolicy-sample
+    app.kubernetes.io/part-of: runtime-guard-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: runtime-guard-operator
+  name: runtimesecuritypolicy-sample
+spec:
+  # TODO(user): Add fields here

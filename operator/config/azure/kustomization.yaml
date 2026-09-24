@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../default
+
+# The base config/manager overlay already rewrites `controller` ->
+# `runtime-guard-operator:dev`, so this overlay must target that resulting
+# name, not `controller`.
+images:
+- name: runtime-guard-operator
+  newName: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator
+  newTag: phase9
+
+patches:
+- path: manager_args_patch.yaml

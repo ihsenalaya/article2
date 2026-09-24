@@ -1,0 +1,1 @@
+acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813 acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator@sha256:c1303d0e81d811bbd7c9caf894c3c04662d8ffe134a9a24e9d71e69f99076e08

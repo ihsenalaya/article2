@@ -1,0 +1,108 @@
+# Runtime Guard node eBPF agent for the single-node k3s cluster on the
+# confidential GPU VM (Phase 9-bis). Same agent image as the AKS system
+# nodes; BPF_LOCK_ENABLED starts "false" (audit-only) deliberately -- unlike
+# the AKS system nodes (where BPF-LSM was independently confirmed active
+# before enabling enforce), this VM's LSM state has not been confirmed yet
+# at the time this manifest is applied (see bootstrap-cgpu-vm.sh step 2,
+# `cat /sys/kernel/security/lsm`). Flip to "true" and
+# `kubectl rollout restart daemonset/runtime-guard-agent` only after that
+# check confirms `bpf` is present -- do not assume it from the AKS result.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: runtime-guard-agent-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-guard-agent
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/status"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-guard-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: runtime-guard-agent
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-agent
+    namespace: runtime-guard-agent-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+  labels:
+    app: runtime-guard-agent
+spec:
+  selector:
+    matchLabels:
+      app: runtime-guard-agent
+  template:
+    metadata:
+      labels:
+        app: runtime-guard-agent
+    spec:
+      serviceAccountName: runtime-guard-agent
+      hostPID: true
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: agent
+          image: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:phase9
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CGROUP_ROOT
+              value: /host/sys/fs/cgroup
+            - name: LSM_PATH
+              value: /host/sys/kernel/security/lsm
+            - name: BPF_LOCK_ENABLED
+              value: "false" # see file header -- confirm LSM state before flipping to true
+            - name: AGENT_IMAGE_DIGEST
+              value: "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:2757b2bb777c7ffa198e8b911be2397a40bf20f34ad437de0c74bee216ee66ef"
+            - name: AGENT_SIGNING_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: runtime-guard-agent-signing-key
+                  key: privateKeyHex
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host/sys
+              readOnly: true
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+      tolerations:
+        - operator: Exists

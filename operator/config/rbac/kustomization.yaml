@@ -1,0 +1,22 @@
+resources:
+# All RBAC will be applied under this service account in
+# the deployment namespace. You may comment out this resource
+# if your manager will use a service account that exists at
+# runtime. Be sure to update RoleBinding and ClusterRoleBinding
+# subjects if changing service account names.
+- service_account.yaml
+- role.yaml
+- role_binding.yaml
+- leader_election_role.yaml
+- leader_election_role_binding.yaml
+# auth proxy (kube-rbac-proxy) disabled: the kubebuilder-scaffolded default
+# image (gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0) no longer resolves (404
+# from GCR — an upstream scaffold rot, not specific to this cluster). Rather
+# than chase a moving image tag for a metrics-auth sidecar unrelated to this
+# project's actual research goals, /metrics is exposed directly by the
+# manager (ClusterIP only, not exposed outside the cluster). See
+# EXPERIMENTS_LOG.md Phase 3.
+# - auth_proxy_service.yaml
+# - auth_proxy_role.yaml
+# - auth_proxy_role_binding.yaml
+# - auth_proxy_client_clusterrole.yaml

@@ -1,0 +1,83 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-13T19:22:31Z"
+  generation: 2
+  name: c3-stale-evidence-1344
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: c3-stale-evidence-1344
+    uid: 842d31fe-6262-4adc-a99a-b11b6ac3553e
+  resourceVersion: "72347"
+  uid: cc5f0134-959c-4b06-b36f-72fa9af5dbfe
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5
+  binding:
+    decisionEpoch: 1
+    decisionID: workloads/c3-stale-evidence-1344
+    decisionNonce: "1786648950564546048"
+    decisionVersion: 1
+    imageDigest: test-image-digest
+    modelDigest: test-model-digest
+    nodeIdentity: vm-a2-cpucampaign-20260813-worker
+    podSpecHash: test-pod-spec-hash
+    podUID: 040f13f6-4deb-4b2e-92b0-7d772c5bb7c8
+    runtimeClass: kata-qemu-snp
+  bpfLock: {}
+  derivation:
+    decisionHash: 88a4dacf0dd4e26b9bf2d54b844a774698ba51c601f85681c0112926c83c7fc1
+    derivationVersion: runtime-guard-policy-derivation/v1
+    evidenceHash: test-evidence-hash
+    policyHash: 81d0678089690d4b00f210af2c5ce4cef4094370d62862e9645f016aa1cffe3f
+    tokenHash: d90f08a29e3814ece4eeb50d86188b66a6e63647c825ddd22700f0c75adf9d74
+    upstreamPolicyHash: test-policy-hash
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: audit
+  exec:
+    defaultAction: deny
+  fileAccess:
+    defaultAction: deny
+  networkEgress:
+    defaultAction: deny
+  placementDecisionRef:
+    name: c3-stale-evidence-1344
+    namespace: workloads
+  targetRef:
+    name: c3-stale-evidence-1344
+    namespace: workloads
+status:
+  appliedCgroupIDs:
+  - "173680"
+  - "173601"
+  appliedNodeName: vm-a2-cpucampaign-20260813-worker
+  appliedPolicyGeneration: 2
+  conditions:
+  - lastTransitionTime: "2026-08-13T19:22:31Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-13T19:22:32Z"
+    message: placement token verified against trust anchor
+    reason: Verified
+    status: "True"
+    type: Verified
+  - lastTransitionTime: "2026-08-13T19:22:33Z"
+    message: policy generation 2 applied to 2 cgroup(s) on node vm-a2-cpucampaign-20260813-worker
+    observedGeneration: 2
+    reason: PolicyApplied
+    status: "True"
+    type: EnforcementReady
+  decision: active
+  enforcementReadyAt: "2026-08-13T19:22:33Z"
+  enforcementReadyMonotonicNs: 25479005283723
+  evidenceMode: simulated
+  observedGeneration: 2
+  verificationStatus: Verified

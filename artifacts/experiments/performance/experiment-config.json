@@ -1,0 +1,45 @@
+{
+  "F1_F2_F3_paired_blocks": {
+    "description": "For each of three operation types (exec, file-open, network-connect), n independent blocks. Each block creates a fresh ON pod and a fresh OFF pod (never reusing pod/decision names across blocks), runs a fixed-N loop of the SAME operation in each, in a per-block RANDOMLY assigned order (ON-first or OFF-first, via bash $RANDOM), then cleans both up. Primary metric per run: wall-clock seconds, CPU-time seconds (getrusage RUSAGE_SELF+RUSAGE_CHILDREN delta), derived usec/op (cpu_total_seconds*1e6/n).",
+    "operations": {
+      "exec": {"n_per_run": 2000, "n_blocks": 30, "note": "the 'important' microbenchmark per experiment protocol F2 -- exec is the primary security-relevant hook; met the >=30-blocks target exactly."},
+      "file": {"n_per_run": 20000, "n_blocks": 30, "note": "originally n_blocks=20 (documented scope reduction); bumped to 30 in a Task 12 follow-up (10 additional blocks, identical randomized-order paired methodology, appended to the same raw file) after the user required all sub-30 sample sizes to be closed."},
+      "network": {"n_per_run": 5000, "n_blocks": 30, "note": "same Task 12 follow-up bump as file."}
+    },
+    "network_op_semantics": "Each iteration connects to 127.0.0.1:1 (nothing listens there), expecting immediate ECONNREFUSED. This is the INTENDED, deterministic outcome, not a failure: the connect() syscall still fires every time (generating the traced event), and using a guaranteed-fast local refusal rather than a real remote connection isolates syscall-hook overhead from network RTT/handshake cost. n_completed=0/n_errors=n for the network op in raw output reflects this and is expected, not a bug.",
+    "scripts": ["scripts/run-f1.sh", "scripts/run-f1-resume.sh (completed the interrupted first attempt's final 10 network blocks + all of F3, see exclusions.md)"]
+  },
+  "F3_event_drop_check": {
+    "description": "Separate from the timing blocks above (which do not wait for an evidence tick, to avoid inflating every block's wall-clock time by 30s+). One larger ON run per operation type, followed by a 35s wait (>1 full evidence-emission tick) and a direct query of that pod's RuntimePlacementEvidence object for dropCount, eventsDroppedSinceLastEvidence, and the sum of Behavior counters (incorporated_count).",
+    "operations": {"exec": 5000, "file": 50000, "network": 10000},
+    "scripts": ["scripts/run-f1.sh (F3 section)", "scripts/run-f1-resume.sh (actual retained run)"]
+  },
+  "F4_event_rate_curve": {
+    "description": "Rate varied by CONCURRENT WORKERS inside one ON pod (1/2/4/8 parallel perf-workload goroutines, each independently forking+exec'ing /bin/true), never by injecting sleeps between operations -- an achieved-throughput sweep via genuine parallelism, per the protocol's explicit warning against a rate-limited-by-generator benchmark producing a misleading usec/event number. Only the exec operation is swept (highest per-op cost, most likely to reveal a rate-dependent loss curve on a 2-vCPU node). n=3 reps per concurrency tier.",
+    "operation": "exec",
+    "n_per_worker": 1500,
+    "concurrencies": [1, 2, 4, 8],
+    "reps_per_tier": 3,
+    "scripts": ["scripts/run-f4.sh"]
+  },
+  "statistics": {
+    "design": "paired (each block pairs an ON run and an OFF run of the identical workload)",
+    "primary_interval": "nonparametric bootstrap 95% CI on the mean paired difference (10000 resamples, fixed seed 20260814 for reproducibility)",
+    "effect_size": "Hedges' g for paired/repeated-measures designs (d_z = mean_diff/sd_diff, corrected by J = 1 - 3/(4*(n-1)-1)) -- explicitly NOT the independent-samples pooled-SD Cohen's d, per experiment protocol F5's instruction not to blindly use independent-sample formulas.",
+    "significance_testing": "No p-value is computed or reported. The experiment protocol explicitly warns against interpreting p > 0.05 as 'no overhead' -- reporting the mean difference with a bootstrap CI, plus a stated minimum-detectable-effect-size at 80% power (sensitivity of the design), answers the same question without that misinterpretation risk."
+  },
+  "sample_size_discipline": "n = number of independent blocks (each block = one fresh ON pod + one fresh OFF pod + one workload run each), never assertions x runs. F4's reps are independent scale-job-style runs, not additional statistical blocks for the F1-F3 comparison.",
+  "task_12_followup_2026_08_14": {
+    "trigger": "User explicitly rejected F3's exec incorporated_count anomaly as an unexplained observation and required further investigation.",
+    "root_cause_found": "perf-workload's exec op left Stdin/Stdout/Stderr nil; Go's os/exec opens /dev/null per nil stream before forking, generating extra FILE_OPEN tracepoint events inside the same monitored cgroup alongside the one real EXEC event. Same bug class as g1-runner's Task 10 fix, not previously ported to this separate tool.",
+    "fix": "operator/cmd/perf-workload/main.go: cmd.Stdin/Stdout/Stderr explicitly set to os.Stdin/os.Stdout/os.Stderr before cmd.Run().",
+    "verification": "Live rerun on re-provisioned cluster (raw/f3-event-drop-check-task12-fixed.jsonl): exec incorporated_count for n=5000 dropped from 95008 (~19.0x, original raw/f3-event-drop-check.jsonl) to 55011 (~11.0x) -- a real, measured ~42% reduction.",
+    "outcome": "PARTIALLY RESOLVED, reported honestly. Dynamic linking ruled out as a further contributor (busybox base image statically linked, confirmed via binary size). Residual ~11x unexplained; further root-causing would require strace/ftrace-level tracing, not pursued given the now-reduced effect size and time budget. file/network (no exec.Command call) remained clean at ~1x in both original and fixed reruns, confirming the residual anomaly is specific to Go's exec.Command machinery, not RuntimeGuard's own event-counting (drop_count=0 throughout)."
+  },
+  "task_12_followup_round2_2026_08_14": {
+    "trigger": "User explicitly required ALL remaining limitations closed (n=20 sample sizes, missing memory metric, F4 ON-only sweep), not accepted as permanent scope reductions.",
+    "sample_size_bump": "file/network F1 blocks bumped from 20 to 30 each (scripts/run-f1-bump-to-30.sh), appending 10 new blocks per op to the SAME raw/f1-paired-blocks.jsonl with the identical randomized-order paired methodology, then regenerating processed/figures via analyze.py. All three ops (exec/file/network) now meet n>=30.",
+    "memory_metric_added": "perf-workload now reports max_rss_kb_before/after/delta via getrusage(RUSAGE_SELF).Maxrss. Verified live: consistently 0 delta across spot checks -- a real null result, not a fabricated positive one.",
+    "f4_off_sweep_added": "scripts/run-f4-off.sh runs the identical concurrency/rep sweep against untracked (OFF) pods, producing raw/f4-rate-curve-off.jsonl (12 records). Decomposes RuntimeGuard's own marginal contention cost (growing from -38us at c=1 to +286us at c=8) from generic Linux fork/exec contention -- previously entirely absent. Caveat disclosed: ON and OFF batches were sequential, not interleaved like F1, so time-of-day/system-load drift is a real, uncontrolled potential confound for the ABSOLUTE ops/s comparison specifically (not for the within-tier marginal-cost trend, which is the load-bearing finding)."
+  }
+}

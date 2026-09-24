@@ -1,0 +1,2 @@
+pod_name,captured_at,wait_seconds_before_check,live_authorization_state_after_wait,revocation_confirmed_live,authcurrency_disabled,authcurrency_enabled,finding,git_commit
+c3-stale-evidence-1344,2026-08-13T19:22:56Z,90,revoked,True,"{'valid': True, 'authorized_and_compliant': True}","{'valid': False, 'authorized_and_compliant': False}","a captured, correctly-signed, pre-revocation evidence snapshot is accepted as AuthorizedAndCompliant by a verifier without the authorization-currency check, and correctly rejected by one with it",5685af54f9f70273dccf601d472579074f21692c

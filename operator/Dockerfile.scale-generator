@@ -1,0 +1,27 @@
+# Task 08's in-cluster scalability load generator. Same build pattern as
+# the main operator Dockerfile, just a different entrypoint binary --
+# cmd/scale-generator lives in this module (not a standalone one) because
+# it reuses internal/upstream, which Go's internal/ visibility rules
+# restrict to importers under this same module root.
+FROM golang:1.21 AS builder
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /workspace
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+
+COPY cmd/scale-generator/ cmd/scale-generator/
+COPY api/ api/
+COPY internal/upstream/ internal/upstream/
+COPY pkg/ pkg/
+
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o scale-generator ./cmd/scale-generator
+
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/scale-generator .
+USER 65532:65532
+
+ENTRYPOINT ["/scale-generator"]

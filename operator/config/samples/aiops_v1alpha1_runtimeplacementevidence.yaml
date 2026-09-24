@@ -1,0 +1,18 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimePlacementEvidence
+metadata:
+  labels:
+    app.kubernetes.io/name: runtimeplacementevidence
+    app.kubernetes.io/instance: runtimeplacementevidence-sample
+    app.kubernetes.io/part-of: runtime-guard-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: runtime-guard-operator
+  name: runtimeplacementevidence-sample
+spec:
+  policyRef:
+    name: runtimesecuritypolicy-sample
+    namespace: default
+  targetRef:
+    name: guarded-pod
+    namespace: default
+  nodeName: kind-worker

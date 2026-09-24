@@ -1,0 +1,6 @@
+NAME                                 DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE     CONTAINERS   IMAGES                                                                            SELECTOR
+daemonset.apps/runtime-guard-agent   2         2         2       2            2           <none>          4m23s   agent        acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813   app=runtime-guard-agent
+
+NAME                            READY   STATUS    RESTARTS   AGE   IP              NODE                                NOMINATED NODE   READINESS GATES
+pod/runtime-guard-agent-fhkjs   1/1     Running   0          71s   192.168.173.5   vm-a2-cpucampaign-20260813-cp       <none>           <none>
+pod/runtime-guard-agent-xlvp7   1/1     Running   0          70s   192.168.87.68   vm-a2-cpucampaign-20260813-worker   <none>           <none>

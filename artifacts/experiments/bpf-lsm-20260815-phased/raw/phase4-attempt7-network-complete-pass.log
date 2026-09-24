@@ -1,0 +1,713 @@
+run_name=phase4-exec-test-1786825643
+=== cleanup any stale objects from a prior attempt ===
+=== 1) creating g1-runner pod (pinned to the worker node, real BPF-LSM) ===
+pod/phase4-exec-test-1786825643 created
+=== waiting for pod to be scheduled ===
+pod_uid=dd03ce1f-c224-46b3-8e97-e2c5d2949425 node_name=vm-a2-cpucampaign-20260813-worker
+=== 2) minting signed decision D (signed ExecPolicyRequest + FilePolicyRequest + NetworkPolicyRequest) ===
+=== 3) waiting for the operator to derive RuntimeSecurityPolicy/phase4-exec-test-1786825643 ===
+=== waiting for worker verification and the current policy generation to be applied ===
+--- P (as actually derived by the real controller -- NOT hand-patched) ---
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-15T20:27:36Z"
+  generation: 2
+  name: phase4-exec-test-1786825643
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: phase4-exec-test-1786825643
+    uid: 9e2092a9-b250-4289-85a3-b6d37501db2e
+  resourceVersion: "21218"
+  uid: c644fffc-11f6-42a3-b143-3a1a3bb24b6d
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cfc44b112a64e4c03699c0f25280837928f3d9b76c6fb0a62bf1c6b5f4f61eb0
+  binding:
+    decisionEpoch: 1
+    decisionID: workloads/phase4-exec-test-1786825643
+    decisionNonce: "1786825655884268788"
+    decisionVersion: 1
+    imageDigest: test-image-digest
+    modelDigest: test-model-digest
+    nodeIdentity: vm-a2-cpucampaign-20260813-worker
+    podSpecHash: test-pod-spec-hash
+    podUID: dd03ce1f-c224-46b3-8e97-e2c5d2949425
+    runtimeClass: kata-qemu-snp
+  bpfLock: {}
+  derivation:
+    decisionHash: c663fa2da0c9302a1931dc7d51651919d99ddf560c10332a6114c9186f80b6c8
+    derivationVersion: runtime-guard-policy-derivation/v1
+    evidenceHash: test-evidence-hash
+    policyHash: 3846e6f6e1c83a627f82a67236da6c860314691b21fbaeb6d427e4c4aa1b3c30
+    tokenHash: c4805f540bda280985ac2e0298a8cbaaa7991fbaf592e5e509c74cdfaada4e8e
+    upstreamPolicyHash: test-policy-hash
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: enforce
+  exec:
+    allowedPaths:
+    - /bin/true
+    defaultAction: deny
+  fileAccess:
+    allowedPathPrefixes:
+    - /lib/libm.so.6
+    - /lib/libresolv.so.2
+    - /lib/libc.so.6
+    - /tmp/allowed-testfile
+    defaultAction: deny
+  networkEgress:
+    allowedCIDRs:
+    - 10.43.1.20
+    allowedPorts:
+    - 9999
+    defaultAction: deny
+  placementDecisionRef:
+    name: phase4-exec-test-1786825643
+    namespace: workloads
+  targetRef:
+    name: phase4-exec-test-1786825643
+    namespace: workloads
+status:
+  appliedCgroupIDs:
+  - "33209"
+  - "33288"
+  appliedNodeName: vm-a2-cpucampaign-20260813-worker
+  appliedPolicyGeneration: 2
+  conditions:
+  - lastTransitionTime: "2026-08-15T20:27:36Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-15T20:27:37Z"
+    message: placement token verified against trust anchor
+    reason: Verified
+    status: "True"
+    type: Verified
+  - lastTransitionTime: "2026-08-15T20:27:37Z"
+    message: policy generation 2 applied to 2 cgroup(s) on node vm-a2-cpucampaign-20260813-worker
+    observedGeneration: 2
+    reason: PolicyApplied
+    status: "True"
+    type: EnforcementReady
+  decision: active
+  enforcementReadyAt: "2026-08-15T20:27:42Z"
+  enforcementReadyMonotonicNs: 10780242331743
+  evidenceMode: real
+  observedGeneration: 2
+  verificationStatus: Verified
+=== 4) waiting for g1-runner pod to complete ===
+final pod phase: Succeeded
+=== 5) g1-runner's own results ===
+[
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 1,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 1,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 2,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 2,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 3,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 3,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 4,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 4,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 5,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 5,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 6,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 6,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 7,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 7,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 8,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 8,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 9,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 9,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 10,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 10,
+        "target": "/bin/false",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "fork/exec /bin/false: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 1,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 1,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 2,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 2,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 3,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 3,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 4,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 4,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 5,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 5,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 6,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 6,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 7,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 7,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 8,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 8,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 9,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 9,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "file",
+        "condition": "allow",
+        "rep": 10,
+        "target": "/tmp/allowed-testfile",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "file",
+        "condition": "deny",
+        "rep": 10,
+        "target": "/bin/true",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "open /bin/true: operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 1,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 1,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 2,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 2,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 3,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 3,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 4,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 4,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 5,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 5,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 6,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 6,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 7,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 7,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 8,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 8,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 9,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 9,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    },
+    {
+        "op": "network",
+        "condition": "allow",
+        "rep": 10,
+        "target": "10.43.1.20:9999",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "network",
+        "condition": "deny",
+        "rep": 10,
+        "target": "10.43.1.20:8888",
+        "success": false,
+        "errno": "operation not permitted",
+        "errno_is_eperm": true,
+        "side_effect_observed": false,
+        "raw_error": "operation not permitted"
+    }
+]
+PASS: exec, file, and network allow/deny all enforced as signed
+=== 6) independent kernel ground truth on the worker (bpftool), for THIS pod's actual cgroup ===
+--- container ID for this pod ---
+c01030e58e40cc79f33e1590d07444e1557123a0ec55a9e49650063a5529b815 g1-runner

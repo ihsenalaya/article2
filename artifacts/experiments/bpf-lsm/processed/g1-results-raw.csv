@@ -1,0 +1,121 @@
+op,condition,rep,target,success,errno,errno_is_eperm,side_effect_observed,raw_error
+exec,allow,1,/bin/true,True,,False,True,
+exec,deny,1,/bin/false,False,,False,False,exit status 1
+exec,allow,2,/bin/true,True,,False,True,
+exec,deny,2,/bin/false,False,,False,False,exit status 1
+exec,allow,3,/bin/true,True,,False,True,
+exec,deny,3,/bin/false,False,,False,False,exit status 1
+exec,allow,4,/bin/true,True,,False,True,
+exec,deny,4,/bin/false,False,,False,False,exit status 1
+exec,allow,5,/bin/true,True,,False,True,
+exec,deny,5,/bin/false,False,,False,False,exit status 1
+exec,allow,6,/bin/true,True,,False,True,
+exec,deny,6,/bin/false,False,,False,False,exit status 1
+exec,allow,7,/bin/true,True,,False,True,
+exec,deny,7,/bin/false,False,,False,False,exit status 1
+exec,allow,8,/bin/true,True,,False,True,
+exec,deny,8,/bin/false,False,,False,False,exit status 1
+exec,allow,9,/bin/true,True,,False,True,
+exec,deny,9,/bin/false,False,,False,False,exit status 1
+exec,allow,10,/bin/true,True,,False,True,
+exec,deny,10,/bin/false,False,,False,False,exit status 1
+exec,allow,11,/bin/true,True,,False,True,
+exec,deny,11,/bin/false,False,,False,False,exit status 1
+exec,allow,12,/bin/true,True,,False,True,
+exec,deny,12,/bin/false,False,,False,False,exit status 1
+exec,allow,13,/bin/true,True,,False,True,
+exec,deny,13,/bin/false,False,,False,False,exit status 1
+exec,allow,14,/bin/true,True,,False,True,
+exec,deny,14,/bin/false,False,,False,False,exit status 1
+exec,allow,15,/bin/true,True,,False,True,
+exec,deny,15,/bin/false,False,,False,False,exit status 1
+exec,allow,16,/bin/true,True,,False,True,
+exec,deny,16,/bin/false,False,,False,False,exit status 1
+exec,allow,17,/bin/true,True,,False,True,
+exec,deny,17,/bin/false,False,,False,False,exit status 1
+exec,allow,18,/bin/true,True,,False,True,
+exec,deny,18,/bin/false,False,,False,False,exit status 1
+exec,allow,19,/bin/true,True,,False,True,
+exec,deny,19,/bin/false,False,,False,False,exit status 1
+exec,allow,20,/bin/true,True,,False,True,
+exec,deny,20,/bin/false,False,,False,False,exit status 1
+exec,allow,21,/bin/true,True,,False,True,
+exec,deny,21,/bin/false,False,,False,False,exit status 1
+exec,allow,22,/bin/true,True,,False,True,
+exec,deny,22,/bin/false,False,,False,False,exit status 1
+exec,allow,23,/bin/true,True,,False,True,
+exec,deny,23,/bin/false,False,,False,False,exit status 1
+exec,allow,24,/bin/true,True,,False,True,
+exec,deny,24,/bin/false,False,,False,False,exit status 1
+exec,allow,25,/bin/true,True,,False,True,
+exec,deny,25,/bin/false,False,,False,False,exit status 1
+exec,allow,26,/bin/true,True,,False,True,
+exec,deny,26,/bin/false,False,,False,False,exit status 1
+exec,allow,27,/bin/true,True,,False,True,
+exec,deny,27,/bin/false,False,,False,False,exit status 1
+exec,allow,28,/bin/true,True,,False,True,
+exec,deny,28,/bin/false,False,,False,False,exit status 1
+exec,allow,29,/bin/true,True,,False,True,
+exec,deny,29,/bin/false,False,,False,False,exit status 1
+exec,allow,30,/bin/true,True,,False,True,
+exec,deny,30,/bin/false,False,,False,False,exit status 1
+file,allow,1,/tmp/allowed-testfile,True,,False,True,
+file,deny,1,/etc/hostname,True,,False,True,
+file,allow,2,/tmp/allowed-testfile,True,,False,True,
+file,deny,2,/etc/hostname,True,,False,True,
+file,allow,3,/tmp/allowed-testfile,True,,False,True,
+file,deny,3,/etc/hostname,True,,False,True,
+file,allow,4,/tmp/allowed-testfile,True,,False,True,
+file,deny,4,/etc/hostname,True,,False,True,
+file,allow,5,/tmp/allowed-testfile,True,,False,True,
+file,deny,5,/etc/hostname,True,,False,True,
+file,allow,6,/tmp/allowed-testfile,True,,False,True,
+file,deny,6,/etc/hostname,True,,False,True,
+file,allow,7,/tmp/allowed-testfile,True,,False,True,
+file,deny,7,/etc/hostname,True,,False,True,
+file,allow,8,/tmp/allowed-testfile,True,,False,True,
+file,deny,8,/etc/hostname,True,,False,True,
+file,allow,9,/tmp/allowed-testfile,True,,False,True,
+file,deny,9,/etc/hostname,True,,False,True,
+file,allow,10,/tmp/allowed-testfile,True,,False,True,
+file,deny,10,/etc/hostname,True,,False,True,
+file,allow,11,/tmp/allowed-testfile,True,,False,True,
+file,deny,11,/etc/hostname,True,,False,True,
+file,allow,12,/tmp/allowed-testfile,True,,False,True,
+file,deny,12,/etc/hostname,True,,False,True,
+file,allow,13,/tmp/allowed-testfile,True,,False,True,
+file,deny,13,/etc/hostname,True,,False,True,
+file,allow,14,/tmp/allowed-testfile,True,,False,True,
+file,deny,14,/etc/hostname,True,,False,True,
+file,allow,15,/tmp/allowed-testfile,True,,False,True,
+file,deny,15,/etc/hostname,True,,False,True,
+network,allow,1,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,1,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,2,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,2,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,3,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,3,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,4,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,4,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,5,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,5,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,6,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,6,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,7,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,7,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,8,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,8,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,9,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,9,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,10,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,10,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,11,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,11,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,12,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,12,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,13,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,13,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,14,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,14,127.0.0.1:8888,False,connection refused,False,False,connection refused
+network,allow,15,127.0.0.1:9999,False,connection refused,False,False,connection refused
+network,deny,15,127.0.0.1:8888,False,connection refused,False,False,connection refused

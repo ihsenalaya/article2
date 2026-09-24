@@ -1,0 +1,5 @@
+case,probe_mode,target,total_observed_events,baseline_total_events,delta_over_baseline,observed_by_ebpf
+control-openat,openat,/etc/hostname,29,28,1,True
+control-execve,execve,/bin/true,44,28,16,True
+altpath-openat2,openat2,/etc/hostname,28,28,0,False
+altpath-execveat,execveat,/bin/true,44,28,16,True

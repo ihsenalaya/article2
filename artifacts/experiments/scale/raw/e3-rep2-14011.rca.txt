@@ -1,0 +1,11 @@
+=== FailedScheduling event count for run_id=e3-rep2-14011 ===
+399
+=== pod phase counts for run_id=e3-rep2-14011 ===
+      1 Completed
+    398 Pending
+    102 Running
+=== node pod capacity ===
+vm-a2-cpucampaign-20260813-cp allocatable.pods= 110
+vm-a2-cpucampaign-20260813-worker allocatable.pods= 110
+=== sample FailedScheduling event message ===
+0/2 nodes are available: 1 Too many pods, 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }. preemption: 0/2 nodes are available: 1 No preemption victims found for incoming pod, 1 Preemption is not helpful for scheduling.

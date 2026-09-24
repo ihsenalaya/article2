@@ -1,0 +1,4 @@
+op,n_blocks,on_mean_usec_per_op,off_mean_usec_per_op,mean_diff_usec_per_op,sd_diff_usec_per_op,ci95_lo,ci95_hi,ci_excludes_zero,hedges_g_paired,min_detectable_dz_at_80pct_power
+exec,30,472.8621,397.1686,75.6935,4.8095,73.9471,77.3088,True,15.3277,0.5115
+file,30,5.3646,2.7959,2.5687,1.4618,2.0424,3.076,True,1.7114,0.5115
+network,30,20.5671,11.6218,8.9452,3.1477,7.8327,10.0442,True,2.7677,0.5115

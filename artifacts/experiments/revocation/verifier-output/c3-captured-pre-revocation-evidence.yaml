@@ -1,0 +1,44 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimePlacementEvidence
+metadata:
+  creationTimestamp: "2026-08-13T19:22:53Z"
+  generation: 1
+  name: c3-stale-evidence-1344
+  namespace: aiops-system
+  resourceVersion: "72389"
+  uid: 08136be9-2350-4874-bb9e-5e181f11cf23
+spec:
+  nodeName: vm-a2-cpucampaign-20260813-worker
+  policyRef:
+    name: c3-stale-evidence-1344
+    namespace: workloads
+  targetRef:
+    name: c3-stale-evidence-1344
+    namespace: workloads
+status:
+  agentIntegrity:
+    digestVerified: true
+    imageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5
+  authorizationState: authorized
+  behavior: {}
+  cgroupID: "173680"
+  conformance: conform
+  decisionHash: 88a4dacf0dd4e26b9bf2d54b844a774698ba51c601f85681c0112926c83c7fc1
+  decisionID: workloads/c3-stale-evidence-1344
+  evidenceMode: simulated
+  evidenceSequence: 1
+  hookSetDigest: b3435473634b9c7a5885b94d45376e5e065fdb26cac3977f1def37d8ce09ea99
+  lastAuthorizationSync: "2026-08-13T19:22:48Z"
+  lastHeartbeat: "2026-08-13T19:22:53Z"
+  monitorEpoch: d0291e900b63acd09c94eff8c9ed6828
+  monitorID: agent-vm-a2-cpucampaign-20260813-worker
+  podUID: 040f13f6-4deb-4b2e-92b0-7d772c5bb7c8
+  policyGeneration: 2
+  policyHash: 81d0678089690d4b00f210af2c5ce4cef4094370d62862e9645f016aa1cffe3f
+  signature:
+    algorithm: ed25519
+    expiresAt: "2026-08-13T19:32:53Z"
+    issuedAt: "2026-08-13T19:22:53Z"
+    keyIdentifier: agent-vm-a2-cpucampaign-20260813-worker
+    payloadDigest: 22a98a0e3958c62703c714d8897cbac44fda58e764f00c61fd9a37b6257a08f9
+    signature: 6fabf275d2954fd78d2378d92f0c276bf78fd409f75a3894d4b1966493f7e1c3ae4f4c94c0e860365e5d88482c0b2998cb9d17493b1b7f70c55f06cda2ea3e0e

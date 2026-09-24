@@ -1,0 +1,27 @@
+# permissions for end users to view runtimeplacementevidences.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: runtimeplacementevidence-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: runtime-guard-operator
+    app.kubernetes.io/part-of: runtime-guard-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: runtimeplacementevidence-viewer-role
+rules:
+- apiGroups:
+  - aiops.imperium.io
+  resources:
+  - runtimeplacementevidences
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - aiops.imperium.io
+  resources:
+  - runtimeplacementevidences/status
+  verbs:
+  - get

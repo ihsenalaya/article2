@@ -1,0 +1,18 @@
+# kind cluster config for article 2 (Runtime Guard Operator + eBPF agent).
+# Dedicated cluster, isolated from any other kind cluster on this machine
+# (e.g. "greenops", used by unrelated prior work) — never deploy article 2
+# resources into another project's cluster.
+#
+# 1 control-plane + 1 worker: this machine's WSL2 VM has only ~7GB RAM total,
+# already shared with two other pre-existing kind clusters from unrelated
+# prior work ("greenops", "kubeupgrade-test") that must not be touched. A
+# 3-node cluster exhausted available memory (swap maxed out, docker calls
+# started failing with ENOMEM) — scaled down to 2 nodes, which is still
+# enough to exercise DaemonSet scheduling and the Pod UID <-> cgroup ID
+# mapping across more than one node. See EXPERIMENTS_LOG.md Phase 3.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: article2
+nodes:
+  - role: control-plane
+  - role: worker

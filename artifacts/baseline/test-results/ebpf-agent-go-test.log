@@ -1,0 +1,100 @@
+=== RUN   TestMarkPolicyEnforcementReady
+--- PASS: TestMarkPolicyEnforcementReady (0.00s)
+=== RUN   TestEmitEvidenceBindsDecisionPolicyMonitorAndFreshness
+--- PASS: TestEmitEvidenceBindsDecisionPolicyMonitorAndFreshness (0.00s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/cmd/agent	0.041s
+?   	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/bpfobjs	[no test files]
+=== RUN   TestFindPodCgroupPath_SystemdDriverGuaranteedQoS
+--- PASS: TestFindPodCgroupPath_SystemdDriverGuaranteedQoS (0.01s)
+=== RUN   TestFindPodCgroupPath_SystemdDriverBurstableQoS
+--- PASS: TestFindPodCgroupPath_SystemdDriverBurstableQoS (0.01s)
+=== RUN   TestFindPodCgroupPath_CgroupfsDriver
+--- PASS: TestFindPodCgroupPath_CgroupfsDriver (0.00s)
+=== RUN   TestFindPodCgroupPath_NotFound
+--- PASS: TestFindPodCgroupPath_NotFound (0.01s)
+=== RUN   TestFindPodCgroupPath_EmptyUID
+--- PASS: TestFindPodCgroupPath_EmptyUID (0.01s)
+=== RUN   TestFindPodCgroupPath_DoesNotConfuseSubstringUIDs
+--- PASS: TestFindPodCgroupPath_DoesNotConfuseSubstringUIDs (0.00s)
+=== RUN   TestFindLeafCgroupPaths_SingleContainer
+--- PASS: TestFindLeafCgroupPaths_SingleContainer (0.01s)
+=== RUN   TestFindLeafCgroupPaths_MultiContainer
+--- PASS: TestFindLeafCgroupPaths_MultiContainer (0.01s)
+=== RUN   TestFindLeafCgroupPaths_FallsBackToPodDirWhenNoNesting
+--- PASS: TestFindLeafCgroupPaths_FallsBackToPodDirWhenNoNesting (0.00s)
+=== RUN   TestCgroupID_ReturnsInodeNumber
+--- PASS: TestCgroupID_ReturnsInodeNumber (0.00s)
+=== RUN   TestCgroupID_NonExistentPath
+--- PASS: TestCgroupID_NonExistentPath (0.00s)
+=== RUN   TestPodLeafCgroupIDs_EndToEnd
+--- PASS: TestPodLeafCgroupIDs_EndToEnd (0.01s)
+=== RUN   TestResolver_TrackAndLookupBothDirections
+--- PASS: TestResolver_TrackAndLookupBothDirections (0.01s)
+=== RUN   TestResolver_TrackMultiContainerPod
+--- PASS: TestResolver_TrackMultiContainerPod (0.01s)
+=== RUN   TestResolver_Untrack
+--- PASS: TestResolver_Untrack (0.01s)
+=== RUN   TestResolver_UntrackUnknownPod
+--- PASS: TestResolver_UntrackUnknownPod (0.01s)
+=== RUN   TestResolver_TrackMultiplePods
+--- PASS: TestResolver_TrackMultiplePods (0.01s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/cgroupmap	0.108s
+?   	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/loader	[no test files]
+=== RUN   TestBPFLSMActive_Present
+--- PASS: TestBPFLSMActive_Present (0.00s)
+=== RUN   TestBPFLSMActive_Absent
+--- PASS: TestBPFLSMActive_Absent (0.00s)
+=== RUN   TestBPFLSMActive_FileMissing
+--- PASS: TestBPFLSMActive_FileMissing (0.00s)
+=== RUN   TestBPFLSMActive_DoesNotSubstringMatch
+--- PASS: TestBPFLSMActive_DoesNotSubstringMatch (0.00s)
+=== RUN   TestDetermineMode_EnforceWhenActive
+--- PASS: TestDetermineMode_EnforceWhenActive (0.00s)
+=== RUN   TestDetermineMode_AuditWhenInactive
+--- PASS: TestDetermineMode_AuditWhenInactive (0.00s)
+=== RUN   TestDetermineMode_AuditWhenFileMissing
+--- PASS: TestDetermineMode_AuditWhenFileMissing (0.00s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/lsmdetect	0.023s
+=== RUN   TestMediationCoverageMatrixTraceability
+--- PASS: TestMediationCoverageMatrixTraceability (0.04s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/mediation	0.052s
+=== RUN   TestHash_MatchesCReferenceImplementation
+--- PASS: TestHash_MatchesCReferenceImplementation (0.00s)
+=== RUN   TestHash_Deterministic
+--- PASS: TestHash_Deterministic (0.00s)
+=== RUN   TestHash_DifferentPathsDifferentHashes
+--- PASS: TestHash_DifferentPathsDifferentHashes (0.00s)
+=== RUN   TestHash_TruncatesLikeKernelSide
+--- PASS: TestHash_TruncatesLikeKernelSide (0.00s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/pathhash	0.009s
+=== RUN   TestBuildPlan_DefaultActionsTranslated
+--- PASS: TestBuildPlan_DefaultActionsTranslated (0.00s)
+=== RUN   TestBuildPlan_RejectsNilPolicy
+--- PASS: TestBuildPlan_RejectsNilPolicy (0.00s)
+=== RUN   TestBuildPlan_ExecRulesUseCorrectHashesAndOrder
+--- PASS: TestBuildPlan_ExecRulesUseCorrectHashesAndOrder (0.00s)
+=== RUN   TestBuildPlan_FileRulesCombineFileAndDevicePolicies
+--- PASS: TestBuildPlan_FileRulesCombineFileAndDevicePolicies (0.00s)
+=== RUN   TestBuildPlan_DeviceRulesUseFileHookMap
+--- PASS: TestBuildPlan_DeviceRulesUseFileHookMap (0.00s)
+=== RUN   TestBuildPlan_NetCIDR_SingleHostNoPorts
+--- PASS: TestBuildPlan_NetCIDR_SingleHostNoPorts (0.00s)
+=== RUN   TestBuildPlan_NetCIDR_BareIPTreatedAsSlash32
+--- PASS: TestBuildPlan_NetCIDR_BareIPTreatedAsSlash32 (0.00s)
+=== RUN   TestBuildPlan_NetCIDR_WithExplicitPorts
+--- PASS: TestBuildPlan_NetCIDR_WithExplicitPorts (0.00s)
+=== RUN   TestBuildPlan_NetDeniedCIDRProducesDenyRule
+--- PASS: TestBuildPlan_NetDeniedCIDRProducesDenyRule (0.00s)
+=== RUN   TestBuildPlan_SkipsCIDRBroaderThanSlash32
+--- PASS: TestBuildPlan_SkipsCIDRBroaderThanSlash32 (0.00s)
+=== RUN   TestBuildPlan_RejectsMalformedCIDR
+--- PASS: TestBuildPlan_RejectsMalformedCIDR (0.00s)
+=== RUN   TestBuildPlan_RejectsIPv6
+--- PASS: TestBuildPlan_RejectsIPv6 (0.00s)
+PASS
+ok  	github.com/ihsenalaya/runtime-guard-ebpf-agent/internal/policy	0.016s

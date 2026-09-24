@@ -1,0 +1,10 @@
+# Applies when the repo root is used as the Docker build context (e.g. the
+# ebpf-agent build, which needs both ebpf-agent/ and the sibling operator/
+# module in context — see ebpf-agent/Dockerfile's header comment).
+.git/
+**/bin/
+deploy/
+results/
+experiments/
+*.md
+deploy/kind/trust-anchor.env

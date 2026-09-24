@@ -1,0 +1,17 @@
+{
+  "D1_pod_recreation_regression": {
+    "description": "Repeats the stale pod-UID-binding scenario (experiment protocol section 9): mint a real signed decision bound to Pod A's real UID, reach EnforcementReady+active, delete Pod A only (the decision/policy object is left unchanged), recreate Pod B at the identical Name+Namespace, wait several poll cycles, then check EXTERNAL cluster/log state for whether the stale policy ever became active for B.",
+    "reps": 10,
+    "post_recreate_wait_seconds": 20,
+    "post_recreate_wait_note": "4x the agent's default 5s --poll-interval, giving margin for jitter (consistent with Task 06/B3's lesson on under-margined freshness thresholds against a fixed polling cadence).",
+    "checks_per_rep": [
+      "uid_changed: Pod A's UID != Pod B's UID (sanity check that Kubernetes actually generated a new identity)",
+      "applied_cgroups_unchanged: RuntimeSecurityPolicy.Status.appliedCgroupIDs is identical before and after B's creation -- this field is only ever written on a genuinely new successful bind, so any change would mean the stale policy re-bound to B's real cgroup",
+      "refusal_log_confirmed: the agent's 'pod UID mismatch: live pod does not match the decision's signed pod UID, refusing to bind' warning appears, naming this policy key and B's real UID, after B's creation timestamp -- positive confirmation the refusal mechanism actively fired, not merely that nothing happened to trigger it",
+      "evidence_incorrectly_bound_to_b: RuntimePlacementEvidence.Status.PodUID never becomes equal to B's real UID"
+    ],
+    "pass_condition": "policy_did_not_bind_to_b = applied_cgroups_unchanged AND NOT evidence_incorrectly_bound_to_b",
+    "sample_size_note": "Experiment protocol targets >=10 independent recreations; n=10 exactly met.",
+    "scripts": ["scripts/run-d1.sh"]
+  }
+}

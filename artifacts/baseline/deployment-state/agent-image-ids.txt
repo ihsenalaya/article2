@@ -1,0 +1,2 @@
+vm-a2-cpucampaign-20260813-cp acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813 acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:259f2d77e8ee33b855e4b48c5087662a602f6b139918729a108a003367213320
+vm-a2-cpucampaign-20260813-worker acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813 acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:259f2d77e8ee33b855e4b48c5087662a602f6b139918729a108a003367213320

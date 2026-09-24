@@ -1,0 +1,20 @@
+{
+  "task": "TASK-09",
+  "experiment": "F — event-dependent performance cost",
+  "git_commit_note": "operator/cmd/perf-workload (new tool), operator/Dockerfile.perf-workload are uncommitted working-tree additions at run time, built into the perf-workload image referenced below, and are committed together with this experiment directory as the single Task 09 commit immediately after this file is written. No changes were made to the operator or ebpf-agent binaries themselves.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "worker_node_vcpus": 2,
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task06@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5",
+    "perf_workload": "acrarticle2ebpftm2ogg.azurecr.io/perf-workload:task09-v1@sha256:8e133acc137b169768421bb20281689be03fa301630e14d2cae7b475a0a42e03"
+  },
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md; Task 10 addresses real BPF-LSM enforcement separately). All measured overhead in this task therefore comes from the tracepoint-based audit hooks (sys_enter_execve/open/openat/connect in ebpf-agent/bpf/agent.bpf.c), not the lsm/* programs.",
+  "on_off_semantics": "ON = the workload pod's cgroup has an active RuntimeSecurityPolicy (a real, EnforcementReady, signed AIPlacementDecision was minted and applied for it), so agent.bpf.c's get_cgroup_config() lookup succeeds and every monitored syscall takes the full path (path/dest read, rule-map lookup, ring-buffer event submission). OFF = the same pod image, on the same node, with no AIPlacementDecision/RuntimeSecurityPolicy ever created for it, so the lookup returns NULL and every tracepoint handler returns immediately (`if (!cfg) return 0`). Both conditions run under the SAME live agent DaemonSet -- this measures RuntimeGuard's per-event marginal cost when actively tracking a workload, not the cost of the agent being present on the node at all (which would require a node without the DaemonSet, not available on this 2-node cluster where every node needs runtime-guard-agent to serve any other experiment). Confirmed by direct code inspection of ebpf-agent/bpf/agent.bpf.c (see lib.sh's header comment).",
+  "evidence_tick_interval_seconds": 30,
+  "evidence_namespace": "aiops-system",
+  "session_interruption_note": "The first attempt at run-f1.sh (F1-F3 paired blocks) was interrupted mid-sweep by an environment/session restart unrelated to this experiment (an orphaned-background-task notification and a wiped /tmp confirmed this, not a script crash). 60/70 blocks had already completed successfully at that point (exec 30/30, file 20/20, network 10/20) and were retained; a resume script (run-f1-resume.sh) completed the remaining 10 network blocks by appending to the same raw file, then ran F3 (which had not started yet) from scratch. See exclusions.md."
+}

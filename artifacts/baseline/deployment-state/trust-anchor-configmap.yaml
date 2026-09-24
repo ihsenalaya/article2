@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  publicKeyHex: b9ba6449cf6f0c0c60c32d442ed869a33107882e720dffcc90dba2dcfe4df6dd
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"publicKeyHex":"b9ba6449cf6f0c0c60c32d442ed869a33107882e720dffcc90dba2dcfe4df6dd"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"attestation-scheduler-public-key","namespace":"aiops-system"}}
+  creationTimestamp: "2026-08-13T12:38:04Z"
+  name: attestation-scheduler-public-key
+  namespace: aiops-system
+  resourceVersion: "2065"
+  uid: 0ed53ed6-d6c8-4db8-ab7d-d69fd8571129

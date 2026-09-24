@@ -1,0 +1,22 @@
+{
+  "task": "TASK-11",
+  "experiment": "Optional trust-boundary hardening — worker-side D->P validation",
+  "git_commit_note": "ebpf-agent/internal/trustverify (new package), changes to ebpf-agent/cmd/agent/main.go (wiring), and deploy/azure/cpu-campaign-20260813/manifests/agent-daemonset.yaml (new RBAC + image tag) are uncommitted working-tree changes at run time, committed together with this experiment directory as the single Task 11 commit immediately after this file is written.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task11@sha256:0846bda9283b47dfd02df73c3f4a64c0445eaa24e7237fae53127185f37806c3"
+  },
+  "note_on_agent_image": "Rebuilt from Task 10's fixed image to add ebpf-agent/internal/trustverify and its wiring into reconcileOnce. No eBPF program changes in this task -- the BPF-LSM fixes from Task 10 are unaffected and unchanged. This rebuild also incidentally corrected a latent deployment-drift bug: deploy/azure/cpu-campaign-20260813/manifests/agent-daemonset.yaml's image field had never been updated past cpu-campaign-20260813-task06 despite Task 10's imperative `kubectl set image` changes, so applying this task's RBAC change via the same manifest silently reverted the running image back to task06 until caught and fixed here (see exclusions.md).",
+  "rbac_change": "Added get/list/watch on aiplacementdecisions and get on configmaps to the runtime-guard-agent ClusterRole -- the agent previously had zero visibility into AIPlacementDecision objects or the trust-anchor ConfigMap at all, which is precisely the gap this task closes. See deploy/azure/cpu-campaign-20260813/manifests/agent-daemonset.yaml.",
+  "trust_anchor": "aiops-system/attestation-scheduler-public-key ConfigMap, key publicKeyHex -- the SAME ConfigMap the operator's own controller already reads (public key material, safe for both components to read from one source).",
+  "worker_trust_validation_flag": "--worker-trust-validation (default true via WORKER_TRUST_VALIDATION env, unset in this deployment so the default applies) on the agent binary; --worker-trust-validation=false reproduces the pre-Task-11 (fully-trusting) behavior for comparison, not used in this experiment's retained runs.",
+  "enforcement_mode_by_node": {
+    "vm-a2-cpucampaign-20260813-worker": "enforce (Task 10)",
+    "vm-a2-cpucampaign-20260813-cp": "audit"
+  },
+  "scope_note": "This experiment's pods run as plain busybox pods (not BPF-LSM-enforced workloads) -- Task 11's property under test is the AGENT'S OWN acceptance/rejection of a policy at the control-plane-trust layer, independent of and prior to whatever enforcement mode that policy would otherwise run under. The deny-all fallback plan IS still pushed to the real eBPF maps on the worker node (confirmed via raw/exec-rules-map-after-tamper.json), so this is not a purely in-memory/log-only check."
+}

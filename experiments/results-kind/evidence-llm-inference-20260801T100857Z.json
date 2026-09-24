@@ -1,0 +1,48 @@
+{
+    "apiVersion": "aiops.imperium.io/v1alpha1",
+    "kind": "RuntimePlacementEvidence",
+    "metadata": {
+        "creationTimestamp": "2026-08-01T09:07:10Z",
+        "generation": 1,
+        "name": "llm-inference",
+        "namespace": "aiops-system",
+        "resourceVersion": "28656",
+        "uid": "43e18ec1-06f8-4925-bd60-492e767a3597"
+    },
+    "spec": {
+        "nodeName": "article2-worker",
+        "policyRef": {
+            "name": "llm-inference",
+            "namespace": "workloads"
+        },
+        "targetRef": {
+            "name": "llm-inference",
+            "namespace": "workloads"
+        }
+    },
+    "status": {
+        "agentIntegrity": {
+            "digestVerified": true,
+            "imageDigest": "runtime-guard-ebpf-agent:dev@sha256:4a4124e4e14280edf1a34a86300e9a0e183d7d376b1e1221328b2655f6a68a4f"
+        },
+        "behavior": {
+            "connectAllowed": 19,
+            "deviceAccessDenied": 38,
+            "execAllowed": 57,
+            "fileOpenAllowed": 19,
+            "fileOpenDenied": 38
+        },
+        "cgroupID": "77723",
+        "conformance": "violation",
+        "evidenceMode": "simulated",
+        "podUID": "26f5241d-7a01-43c5-b218-645404e75e50",
+        "signature": {
+            "algorithm": "ed25519",
+            "expiresAt": "2026-08-01T10:18:50Z",
+            "issuedAt": "2026-08-01T10:08:50Z",
+            "keyIdentifier": "agent-article2-worker",
+            "payloadDigest": "0547552e15123e1d213af9d234cb88661960fafb5be6f895e50a0d51ca63cb13",
+            "signature": "6d32bed6d3948639393ad8596061fabee3018afc8b426c9b197aaf31bd23b3db1aaa83c6dd63e71303e0c645c7601a843081360808358d34739cfa580945990b"
+        }
+    }
+}

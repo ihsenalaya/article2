@@ -1,0 +1,91 @@
+{
+    "apiVersion": "aiops.imperium.io/v1alpha1",
+    "kind": "RuntimeSecurityPolicy",
+    "metadata": {
+        "creationTimestamp": "2026-08-01T09:07:02Z",
+        "generation": 9,
+        "name": "llm-inference",
+        "namespace": "workloads",
+        "ownerReferences": [
+            {
+                "apiVersion": "aiops.imperium.io/v1alpha1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "AIPlacementDecision",
+                "name": "llm-inference",
+                "uid": "fdb72165-2a83-4c23-b1c8-5c23f896f9b6"
+            }
+        ],
+        "resourceVersion": "28181",
+        "uid": "cff4eb27-69f4-4e1f-b713-2729cadd7200"
+    },
+    "spec": {
+        "agentIntegrity": {
+            "expectedImageDigest": "runtime-guard-ebpf-agent:dev@sha256:4a4124e4e14280edf1a34a86300e9a0e183d7d376b1e1221328b2655f6a68a4f"
+        },
+        "binding": {
+            "imageDigest": "test-image-digest",
+            "modelDigest": "test-model-digest",
+            "nodeIdentity": "article2-worker",
+            "podSpecHash": "test-pod-spec-hash",
+            "podUID": "26f5241d-7a01-43c5-b218-645404e75e50",
+            "runtimeClass": "kata-qemu-snp"
+        },
+        "bpfLock": {},
+        "deviceAccess": {
+            "defaultAction": "deny"
+        },
+        "enforcementMode": "audit",
+        "exec": {
+            "allowedPaths": [
+                "/bin/sh",
+                "/bin/cat",
+                "/usr/bin/wget",
+                "/bin/sleep"
+            ],
+            "defaultAction": "deny"
+        },
+        "fileAccess": {
+            "allowedPathPrefixes": [
+                "/models/model.safetensors"
+            ],
+            "defaultAction": "deny"
+        },
+        "networkEgress": {
+            "allowedCIDRs": [
+                "10.96.22.118/32",
+                "10.96.0.10/32"
+            ],
+            "defaultAction": "deny"
+        },
+        "placementDecisionRef": {
+            "name": "llm-inference",
+            "namespace": "workloads"
+        },
+        "targetRef": {
+            "name": "llm-inference",
+            "namespace": "workloads"
+        }
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-08-01T09:07:02Z",
+                "message": "policy schema accepted; agent integrity/enforcement status pending node agent (Phase 4)",
+                "reason": "PolicyAccepted",
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastTransitionTime": "2026-08-01T10:04:50Z",
+                "message": "placement token verified against trust anchor",
+                "reason": "Verified",
+                "status": "True",
+                "type": "Verified"
+            }
+        ],
+        "decision": "active",
+        "observedGeneration": 9,
+        "verificationStatus": "Verified"
+    }
+}

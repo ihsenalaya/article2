@@ -1,0 +1,54 @@
+Ground-truth eBPF map inspection, captured via `bpftool map dump` from the
+worker node's own host namespace (kubectl debug node --profile=sysadmin,
+chroot /host), for a live test pod (g1-diag2-30855, cgroup IDs 18253/18332)
+with RuntimeSecurityPolicy.Spec.EnforcementMode="enforce",
+Exec.DefaultAction="deny", Exec.AllowedPaths=["/bin/true"].
+
+=== cgroup_configs map (id 607), entry for cgroup_id 18253 ===
+{
+    "key": 18253,
+    "value": {
+        "enforcement_mode": 1,
+        "exec_default_allow": 0,
+        "file_default_allow": 0,
+        "net_default_allow": 0,
+        "device_default_allow": 0
+    }
+}
+(entry for 18332 identical)
+
+Confirms: enforcement_mode=1 (HOOK_MODE_ENFORCE, matches "enforce" in the
+CRD spec) and exec_default_allow=0 (deny-by-default, matches
+DefaultAction="deny"). This is the CORRECT configuration for a
+deny-by-default policy with an explicit allow-list.
+
+Control check: a separate, unpatched pod (g1-diag3-24239, policy left at
+the operator's default EnforcementMode="audit") shows enforcement_mode=0
+for its own cgroup entries -- proving enforcement_mode IS read correctly
+per-policy from the CRD spec, not hardcoded to 1 regardless of setting.
+
+=== exec_rules map (id 610), entries for cgroup_ids 19675/19754 (a
+    different, contemporaneous test pod with the same AllowedPaths=["/bin/true"]) ===
+[{
+    "key": {"cgroup_id": 19675, "path_hash": 13000489521738121068},
+    "value": {"allow": 1}
+}, {
+    "key": {"cgroup_id": 19754, "path_hash": 13000489521738121068},
+    "value": {"allow": 1}
+}]
+
+Confirms: exactly ONE rule entry per cgroup, for the hash of "/bin/true"
+(the only path ever added to AllowedPaths), with allow=1. No entry exists
+for "/bin/false" (the deny-condition target) -- as expected, since it was
+never added to any Allowed/DeniedPaths list, so a lookup for its hash
+correctly finds nothing and must fall through to exec_default_allow (0).
+
+=== Conclusion this evidence supports ===
+Every piece of KERNEL-SIDE CONFIGURATION STATE relevant to denying
+"/bin/false" is independently confirmed correct: enforcement_mode=ENFORCE,
+exec_default_allow=DENY, and no allow-rule exists for the denied target.
+Despite this, "/bin/false" was observed to execute successfully (exit
+status 1, its own normal behavior -- not an EPERM) in every recorded test
+rep. This rules out policy-propagation/generation-staleness and
+map-content errors as the cause of the deny-path not blocking; the
+discrepancy is unresolved. See exclusions.md and summary.md.

@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scale-generator
+  namespace: workloads
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: scale-generator
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["aiplacementdecisions"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["aiplacementdecisions/status"]
+    verbs: ["update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies"]
+    verbs: ["get", "list", "watch", "update", "patch", "delete"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: scale-generator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: scale-generator
+subjects:
+  - kind: ServiceAccount
+    name: scale-generator
+    namespace: workloads

@@ -1,0 +1,26 @@
+{
+  "task": "TASK-05",
+  "experiment": "B — observation completeness",
+  "git_commit": "41edc81634febf4495c8b0389f278ee46d9c8ddd",
+  "git_commit_note": "41edc81 (Task 04) was HEAD while all runs in raw/ executed -- the implementation changes this experiment depends on (event counters, evidence conformance=incomplete, monitorEpoch/hookSetDigest/lastHeartbeat/dropCount fields, verify-evidence checks) were uncommitted working-tree changes at run time, built into the images referenced below, and are committed together with this experiment directory as the single Task 05 commit immediately after this file is written.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task05@sha256:f541bdb49ab508c12b5ad901bbefb4f3454b4156000c1fa3deb40fa543fdfab3",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task05@sha256:5dbfb5895dc843fd24b9328a2e1b5516fc3a060d0e956e0324124bebc2b93024",
+    "observation_tools": "acrarticle2ebpftm2ogg.azurecr.io/observation-tools:task05@sha256:f423b6028115c6d1e237a2b996cba5249a6cccef8bcf92f4e5d90b7084de108a"
+  },
+  "note_on_agent_image": "Rebuilt from task04 to add: PERCPU_ARRAY event_counters map (generated/emitted/dropped) in agent.bpf.c; monitorEpoch and hookSetDigest computed once at agent startup and threaded through evidenceLoop/emitEvidence; per-tick eventsDroppedSinceLastEvidence and cumulative dropCount read from the new counters; lastHeartbeat advanced every evidence tick regardless of per-pod activity; conformance forced to \"incomplete\" (overriding both conform and violation) whenever eventsDroppedSinceLastEvidence > 0.",
+  "note_on_operator_image": "Rebuilt to add DropCount, EventsDroppedSinceLastEvidence, MonitorEpoch, LastHeartbeat, HookSetDigest to RuntimePlacementEvidenceStatus and the signed evidence Payload; verify-evidence now evaluates observation-completeness (conformance != incomplete), monitor-heartbeat-fresh (age <= --max-age), monitor-epoch-present, and hook-set-digest-present as real (non-decorative) checks.",
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md; Task 10 addresses real BPF-LSM enforcement separately)",
+  "nodes": ["vm-a2-cpucampaign-20260813-cp", "vm-a2-cpucampaign-20260813-worker"],
+  "evidence_tick_interval_seconds": 30,
+  "hook_set": {
+    "mode": "audit tracepoints",
+    "attached": ["sys_enter_execve", "sys_enter_open", "sys_enter_openat"],
+    "not_attached": ["sys_enter_execveat", "sys_enter_openat2"],
+    "source": "ebpf-agent/internal/loader/loader.go attachAudit -- confirmed both statically (source inspection) and empirically (B2)"
+  }
+}

@@ -1,0 +1,43 @@
+# Installs the NVIDIA driver + Ubuntu's PRE-BUILT signed kernel modules for
+# the confidential `azure-fde` kernel flavour on the AKS H100 node.
+#
+# Run as a Job (not `kubectl debug`): kubectl debug detaches early when the
+# attach handshake fails, which previously let a follow-up reboot kill the
+# apt install mid-flight. A Job has an observable Complete/Failed status we
+# can actually wait on. See EXPERIMENTS_LOG.md Phase 9.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpu-driver-install
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      hostPID: true
+      nodeSelector:
+        kubernetes.azure.com/agentpool: gpuh100
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: installer
+          image: ubuntu:24.04
+          securityContext:
+            privileged: true
+          command: ["nsenter", "--target", "1", "--mount", "--uts", "--ipc", "--net", "--pid", "--"]
+          args:
+            - bash
+            - -c
+            - |
+              set -x
+              export DEBIAN_FRONTEND=noninteractive
+              echo "kernel before: $(uname -r)"
+              apt-get update -qq
+              apt-get install -y \
+                nvidia-driver-570-server-open \
+                linux-modules-nvidia-570-server-open-azure-fde-6.8
+              echo "APT_EXIT=$?"
+              echo "installed kernels:"
+              ls /boot/efi/EFI/ubuntu/ 2>/dev/null || true
+              dpkg -l | grep -E "nvidia-driver-570|linux-modules-nvidia-570|linux-image.*fde" || true

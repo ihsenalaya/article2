@@ -1,0 +1,140 @@
+# eBPF agent DaemonSet for the cpu-campaign-20260813 cluster.
+# BPF_LOCK_ENABLED=false and this cluster runs in audit mode (bpf not yet in
+# the active LSM list -- see artifacts/azure/environment.md); enforce mode is
+# Task 10's job.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-guard-agent
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/status"]
+    verbs: ["get", "update", "patch"]
+  # Task 11: worker-side D->P trust validation needs read access to the
+  # source AIPlacementDecision (to verify its signature/freshness/replay
+  # independently, not trust the operator's own derivation) and to the
+  # same trust-anchor ConfigMap the operator's own controller reads (a
+  # public key, safe for both components to read from one source).
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["aiplacementdecisions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-guard-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: runtime-guard-agent
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-agent
+    namespace: runtime-guard-agent-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+  labels:
+    app: runtime-guard-agent
+spec:
+  selector:
+    matchLabels:
+      app: runtime-guard-agent
+  template:
+    metadata:
+      labels:
+        app: runtime-guard-agent
+    spec:
+      serviceAccountName: runtime-guard-agent
+      hostPID: true
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: agent
+          image: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:e4d88b1990f52725983b4ec2391ef4eb9b24520d7916082bfef14a6063c217f2
+          # Always, not IfNotPresent: Task 08 found that IfNotPresent + an
+          # image-tag reused across rebuilds silently keeps running the
+          # FIRST-ever pulled image on the node, even after many later
+          # rebuilds pushed the same tag with new content -- see
+          # artifacts/experiments/scale/exclusions.md for the full
+          # root-cause account (an imageID digest mismatch was the only way
+          # it was caught).
+          imagePullPolicy: Always
+          # --poll-interval is explicit (not left to the flag default) so
+          # Task 06/C1's parameterized-polling experiment can patch it per
+          # condition via `kubectl set env`/patch without editing this file
+          # for every run; WATCH_REVOCATION similarly toggles Task 06/C2's
+          # opt-in watch-based revocation path for comparison.
+          args:
+            - --poll-interval=5s
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CGROUP_ROOT
+              value: /host/sys/fs/cgroup
+            - name: LSM_PATH
+              value: /host/sys/kernel/security/lsm
+            - name: BPF_LOCK_ENABLED
+              value: "false"
+            - name: EVIDENCE_NAMESPACE
+              value: aiops-system
+            - name: WATCH_REVOCATION
+              value: "false"
+            - name: AGENT_IMAGE_DIGEST
+              value: "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:e4d88b1990f52725983b4ec2391ef4eb9b24520d7916082bfef14a6063c217f2"
+            - name: AGENT_SIGNING_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: runtime-guard-agent-signing-key
+                  key: privateKeyHex
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: agent-state
+              mountPath: /var/lib/runtime-guard-agent
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+        # Task 12 follow-up: node-persistent storage for the TOFU
+        # trust-anchor pin and the anti-replay ledger, so both survive an
+        # agent pod restart on the SAME node (not a cluster-wide store --
+        # a pod rescheduled to a different node starts fresh on that node,
+        # an explicit, documented scope boundary -- see
+        # trustverify.LoadTrustAnchorTOFU/NewReplayLedgerPersistent's doc
+        # comments).
+        - name: agent-state
+          hostPath:
+            path: /var/lib/runtime-guard-agent
+            type: DirectoryOrCreate
+      tolerations:
+        - operator: Exists

@@ -1,0 +1,119 @@
+# Phase 9-ter: real LLM inference workload on the confidential H100 VM, with
+# a REAL allowlist policy (via mint-allowlist-decision.sh), served alongside
+# an unauthorized "attacker" pod with no allowlist at all -- the positive-P5
+# case (legitimate access continues while attacks are denied), not yet
+# demonstrated anywhere else in this mission (every other real-hardware run
+# used a bare deny-all policy).
+#
+# Model: served via vLLM if deploy/azure/cgpu-vm/setup-gpu-container-runtime.sh
+# succeeds (nvidia.com/gpu resource + RuntimeClass); see that script's own
+# verification step for the fallback path if it doesn't. Image/exact paths
+# here are a first draft -- confirm empirically once real container is
+# running (see mint-allowlist-decision.sh header for the same caveat on the
+# allowlist itself).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workloads
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: llm-inference-real
+  namespace: workloads
+  labels: { workload: llm-inference-real }
+spec:
+  runtimeClassName: nvidia
+  imagePullSecrets:
+    - name: acr-pull-secret
+  initContainers:
+    - name: fetch-model
+      image: python:3.11-slim
+      command: ["sh", "-c"]
+      args:
+        - |
+          pip install --no-cache-dir -q huggingface_hub
+          python3 -c "
+          from huggingface_hub import snapshot_download
+          snapshot_download('Qwen/Qwen2.5-7B-Instruct', local_dir='/models/Qwen2.5-7B-Instruct')
+          "
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  containers:
+    - name: vllm
+      image: vllm/vllm-openai:latest
+      command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+      args:
+        - "--model=/models/Qwen2.5-7B-Instruct"
+        - "--served-model-name=llm-inference-real"
+        - "--port=8000"
+        - "--gpu-memory-utilization=0.85"
+        - "--max-model-len=4096"
+        - "--enforce-eager"
+      ports:
+        - containerPort: 8000
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        failureThreshold: 30
+  volumes:
+    - name: models
+      emptyDir:
+        sizeLimit: 30Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-inference-real
+  namespace: workloads
+spec:
+  selector:
+    workload: llm-inference-real
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+# Attacker pod: same node, NO allowlist (bare mint-test-decision, matching
+# every other policy this mission), used to confirm attacks are denied
+# WHILE llm-inference-real continues serving legitimately.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: attacker-gpu
+  namespace: workloads
+  labels: { workload: attacker-gpu }
+spec:
+  imagePullSecrets:
+    - name: acr-pull-secret
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /etc/shadow > /dev/null 2>&1
+            cat /dev/nvidia0 > /dev/null 2>&1
+            /bin/ls / > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://llm-inference-real.workloads.svc.cluster.local:8000/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: nvidia0
+          mountPath: /dev/nvidia0
+  volumes:
+    - name: nvidia0
+      hostPath:
+        path: /dev/nvidia0
+        type: CharDevice

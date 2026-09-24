@@ -1,0 +1,111 @@
+{
+  "valid": false,
+  "freshness_seconds": 65,
+  "checks": [
+    {
+      "name": "signature-algorithm",
+      "passed": true,
+      "message": "algorithm=\"ed25519\""
+    },
+    {
+      "name": "monitor-id",
+      "passed": true,
+      "message": "monitorID=\"agent-vm-a2-cpucampaign-20260813-worker\" keyIdentifier=\"agent-vm-a2-cpucampaign-20260813-worker\""
+    },
+    {
+      "name": "signature",
+      "passed": true,
+      "message": "payload digest and Ed25519 signature verified"
+    },
+    {
+      "name": "freshness-issued",
+      "passed": true,
+      "message": "issuedAt=1786636924 now=1786636989"
+    },
+    {
+      "name": "freshness-expires",
+      "passed": true,
+      "message": "expiresAt=1786637524 now=1786636989"
+    },
+    {
+      "name": "freshness-max-age",
+      "passed": false,
+      "message": "age=65s max=45s"
+    },
+    {
+      "name": "freshness-sequence",
+      "passed": true,
+      "message": "sequence=1"
+    },
+    {
+      "name": "freshness-previous-digest",
+      "passed": true,
+      "message": "previous digest may be empty only for first evidence"
+    },
+    {
+      "name": "policy-ref",
+      "passed": true,
+      "message": "evidence=workloads/b3-liveness-16355 policy=workloads/b3-liveness-16355"
+    },
+    {
+      "name": "target-ref",
+      "passed": true,
+      "message": "evidence=workloads/b3-liveness-16355 policy=workloads/b3-liveness-16355"
+    },
+    {
+      "name": "decision-id",
+      "passed": true,
+      "message": "evidence=\"workloads/b3-liveness-16355\" policy=\"workloads/b3-liveness-16355\""
+    },
+    {
+      "name": "decision-hash",
+      "passed": true,
+      "message": "evidence=\"710cc659befb6323c0e7f54699b2f27ba8b1195f68b5f8296a6b48ab92918e05\" policy=\"710cc659befb6323c0e7f54699b2f27ba8b1195f68b5f8296a6b48ab92918e05\""
+    },
+    {
+      "name": "policy-hash",
+      "passed": true,
+      "message": "evidence=\"47971a5d4df2c8bf2d8201318f4bbc2ae299f5fbea8b17df0f5ba6a161cccedd\" policy=\"47971a5d4df2c8bf2d8201318f4bbc2ae299f5fbea8b17df0f5ba6a161cccedd\""
+    },
+    {
+      "name": "policy-generation",
+      "passed": true,
+      "message": "evidence=2 policy=2"
+    },
+    {
+      "name": "pod-uid",
+      "passed": true,
+      "message": "evidence=\"a30096cf-ebd6-4866-bc20-68c2d2385c38\" policy=\"a30096cf-ebd6-4866-bc20-68c2d2385c38\""
+    },
+    {
+      "name": "node-identity",
+      "passed": true,
+      "message": "evidence=\"vm-a2-cpucampaign-20260813-worker\" policy=\"vm-a2-cpucampaign-20260813-worker\""
+    },
+    {
+      "name": "agent-image-digest",
+      "passed": true,
+      "message": "evidence=\"acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:5dbfb5895dc843fd24b9328a2e1b5516fc3a060d0e956e0324124bebc2b93024\" expected=\"acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:5dbfb5895dc843fd24b9328a2e1b5516fc3a060d0e956e0324124bebc2b93024\" verified=true"
+    },
+    {
+      "name": "observation-completeness",
+      "passed": true,
+      "message": "conformance=\"violation\" eventsDroppedSinceLastEvidence=0 dropCount=0"
+    },
+    {
+      "name": "monitor-heartbeat-fresh",
+      "passed": false,
+      "message": "lastHeartbeat=1786636924 now=1786636989 ageSeconds=65 maxSeconds=45"
+    },
+    {
+      "name": "monitor-epoch-present",
+      "passed": true,
+      "message": "monitorEpoch=\"20c11ec9868a8bfb5fccb93995ea1ee5\""
+    },
+    {
+      "name": "hook-set-digest-present",
+      "passed": true,
+      "message": "hookSetDigest=\"b3435473634b9c7a5885b94d45376e5e065fdb26cac3977f1def37d8ce09ea99\""
+    }
+  ]
+}

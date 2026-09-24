@@ -1,0 +1,5 @@
+rate_per_sec,duration_seconds,attempted,observed_in_evidence,gap,loss_rate,node_drop_count_after,outcome
+100,10,1000,1026,-26,-0.026,,success
+1000,10,10000,10026,-26,-0.0026,,success
+5000,10,49999,50025,-26,-0.0005200104002080041,,success
+10000,10,99995,100021,-26,-0.0002600130006500325,,success

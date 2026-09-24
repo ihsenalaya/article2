@@ -1,0 +1,11 @@
+condition,rep,pod,baseline_verdict,verdict,expected
+valid_D_correct_P,1,cpt-correct-rep1-21537,,ACCEPTED,ACCEPTED
+valid_D_correct_P,2,cpt-correct-rep2-14023,,ACCEPTED,ACCEPTED
+valid_D_correct_P,3,cpt-correct-rep3-17480,,ACCEPTED,ACCEPTED
+valid_D_correct_P,4,cpt-correct-rep4-565,,ACCEPTED,ACCEPTED
+valid_D_correct_P,5,cpt-correct-rep5-1257,,ACCEPTED,ACCEPTED
+valid_D_tampered_P,1,cpt-tampered-rep1-24557,ACCEPTED,REJECTED:hash(P_received) != hash(derive(D)): received=51d77abf9e562aa7 derived=ca3070e4e2b69b92 -- policy content does not match what the signed decision authorizes,REJECTED
+valid_D_tampered_P,2,cpt-tampered-rep2-20773,ACCEPTED,REJECTED:hash(P_received) != hash(derive(D)): received=bf20f2de200c6a8b derived=7dc6fd5797be5061 -- policy content does not match what the signed decision authorizes,REJECTED
+valid_D_tampered_P,3,cpt-tampered-rep3-1617,ACCEPTED,REJECTED:hash(P_received) != hash(derive(D)): received=336b587d4d0ec43f derived=bc2bf4172167b052 -- policy content does not match what the signed decision authorizes,REJECTED
+valid_D_tampered_P,4,cpt-tampered-rep4-27936,ACCEPTED,REJECTED:hash(P_received) != hash(derive(D)): received=37f405e075d2e66d derived=842b3f4b9664a2ad -- policy content does not match what the signed decision authorizes,REJECTED
+valid_D_tampered_P,5,cpt-tampered-rep5-8273,ACCEPTED,REJECTED:hash(P_received) != hash(derive(D)): received=d2eea4546689aaa3 derived=29b5aeb074241a54 -- policy content does not match what the signed decision authorizes,REJECTED

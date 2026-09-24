@@ -1,0 +1,414 @@
+int lsm_exec(unsigned long long * ctx):
+; int BPF_PROG(lsm_exec, struct linux_binprm *bprm, int ret) [file:./../../bpf/agent.bpf.c line_num:376 line_col:5]
+   0: (79) r6 = *(u64 *)(r1 +8)
+   1: (bf) r2 = r6
+   2: (67) r2 <<= 32
+   3: (77) r2 >>= 32
+; if (ret != 0) [file:./../../bpf/agent.bpf.c line_num:378 line_col:6]
+   4: (55) if r2 != 0x0 goto pc+326
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+   5: (79) r9 = *(u64 *)(r1 +0)
+; __u64 cgroup_id = bpf_get_current_cgroup_id(); [file:./../../bpf/agent.bpf.c line_num:381 line_col:20]
+   6: (85) call bpf_get_current_cgroup_id#258112
+   7: (bf) r7 = r0
+   8: (7b) *(u64 *)(r10 -272) = r7
+   9: (bf) r2 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+  10: (07) r2 += -272
+; return bpf_map_lookup_elem(&cgroup_configs, &cgroup_id); [file:./../../bpf/agent.bpf.c line_num:174 line_col:9]
+  11: (18) r1 = map[id:607]
+  13: (85) call __htab_map_lookup_elem#299056
+  14: (15) if r0 == 0x0 goto pc+1
+  15: (07) r0 += 56
+  16: (bf) r8 = r0
+  17: (b7) r6 = 0
+; if (!cfg) [file:./../../bpf/agent.bpf.c line_num:383 line_col:6]
+  18: (15) if r8 == 0x0 goto pc+312
+  19: (b7) r6 = 0
+; char path[MAX_PATH_LEN] = {}; [file:./../../bpf/agent.bpf.c line_num:386 line_col:7]
+  20: (7b) *(u64 *)(r10 -24) = r6
+  21: (7b) *(u64 *)(r10 -32) = r6
+  22: (7b) *(u64 *)(r10 -40) = r6
+  23: (7b) *(u64 *)(r10 -48) = r6
+  24: (7b) *(u64 *)(r10 -56) = r6
+  25: (7b) *(u64 *)(r10 -64) = r6
+  26: (7b) *(u64 *)(r10 -72) = r6
+  27: (7b) *(u64 *)(r10 -80) = r6
+  28: (7b) *(u64 *)(r10 -88) = r6
+  29: (7b) *(u64 *)(r10 -96) = r6
+  30: (7b) *(u64 *)(r10 -104) = r6
+  31: (7b) *(u64 *)(r10 -112) = r6
+  32: (7b) *(u64 *)(r10 -120) = r6
+  33: (7b) *(u64 *)(r10 -128) = r6
+  34: (7b) *(u64 *)(r10 -136) = r6
+  35: (7b) *(u64 *)(r10 -144) = r6
+  36: (7b) *(u64 *)(r10 -152) = r6
+  37: (7b) *(u64 *)(r10 -160) = r6
+  38: (7b) *(u64 *)(r10 -168) = r6
+  39: (7b) *(u64 *)(r10 -176) = r6
+  40: (7b) *(u64 *)(r10 -184) = r6
+  41: (7b) *(u64 *)(r10 -192) = r6
+  42: (7b) *(u64 *)(r10 -200) = r6
+  43: (7b) *(u64 *)(r10 -208) = r6
+  44: (7b) *(u64 *)(r10 -216) = r6
+  45: (7b) *(u64 *)(r10 -224) = r6
+  46: (7b) *(u64 *)(r10 -232) = r6
+  47: (7b) *(u64 *)(r10 -240) = r6
+  48: (7b) *(u64 *)(r10 -248) = r6
+  49: (7b) *(u64 *)(r10 -256) = r6
+  50: (7b) *(u64 *)(r10 -264) = r6
+  51: (7b) *(u64 *)(r10 -272) = r6
+  52: (b7) r1 = 96
+  53: (0f) r9 += r1
+  54: (bf) r1 = r10
+  55: (07) r1 += -16
+; const char *filename = BPF_CORE_READ(bprm, filename); [file:./../../bpf/agent.bpf.c line_num:387 line_col:25]
+  56: (b7) r2 = 8
+  57: (bf) r3 = r9
+  58: (85) call bpf_probe_read_kernel#-124608
+; const char *filename = BPF_CORE_READ(bprm, filename); [file:./../../bpf/agent.bpf.c line_num:387 line_col:25]
+  59: (79) r3 = *(u64 *)(r10 -16)
+  60: (bf) r1 = r10
+; char path[MAX_PATH_LEN] = {}; [file:./../../bpf/agent.bpf.c line_num:386 line_col:7]
+  61: (07) r1 += -272
+; long n = bpf_probe_read_kernel_str(path, sizeof(path), filename); [file:./../../bpf/agent.bpf.c line_num:388 line_col:11]
+  62: (b7) r2 = 256
+  63: (85) call bpf_probe_read_kernel_str#-124496
+; if (n <= 0) [file:./../../bpf/agent.bpf.c line_num:120 line_col:6]
+  64: (65) if r0 s> 0x0 goto pc+5
+; __u8 allow = resolve_path_decision(&exec_rules, cgroup_id, path, len, cfg->exec_default_allow); [file:./../../bpf/agent.bpf.c line_num:391 line_col:77]
+  65: (71) r9 = *(u8 *)(r8 +1)
+; struct path_rule_key key = { [file:./../../bpf/agent.bpf.c line_num:184 line_col:29]
+  66: (7b) *(u64 *)(r10 -16) = r7
+  67: (18) r1 = 0xcbf29ce484222325
+  69: (05) goto pc+30
+; __u8 allow = resolve_path_decision(&exec_rules, cgroup_id, path, len, cfg->exec_default_allow); [file:./../../bpf/agent.bpf.c line_num:391 line_col:77]
+  70: (71) r9 = *(u8 *)(r8 +1)
+; struct path_rule_key key = { [file:./../../bpf/agent.bpf.c line_num:184 line_col:29]
+  71: (7b) *(u64 *)(r10 -16) = r7
+  72: (b7) r2 = 255
+; __u32 len = (__u32)n - 1; [file:./../../bpf/agent.bpf.c line_num:122 line_col:23]
+  73: (07) r0 += -1
+  74: (bf) r3 = r0
+  75: (67) r3 <<= 32
+  76: (77) r3 >>= 32
+  77: (25) if r3 > 0xfe goto pc+5
+  78: (18) r1 = 0xcbf29ce484222325
+  80: (b7) r6 = 0
+  81: (bf) r2 = r0
+; for (__u32 i = 0; i < MAX_PATH_LEN; i++) { [file:./../../bpf/agent.bpf.c line_num:150 line_col:2]
+  82: (15) if r3 == 0x0 goto pc+17
+  83: (bf) r6 = r2
+  84: (18) r1 = 0xcbf29ce484222325
+  86: (b7) r2 = 0
+  87: (bf) r3 = r6
+  88: (67) r3 <<= 32
+  89: (77) r3 >>= 32
+  90: (18) r4 = 0x100000001b3
+  92: (bf) r5 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+  93: (07) r5 += -272
+; hash ^= (unsigned char)buf[i]; [file:./../../bpf/agent.bpf.c line_num:153 line_col:26]
+  94: (0f) r5 += r2
+  95: (71) r5 = *(u8 *)(r5 +0)
+; hash ^= (unsigned char)buf[i]; [file:./../../bpf/agent.bpf.c line_num:153 line_col:8]
+  96: (af) r1 ^= r5
+; hash *= 0x100000001b3ULL; /* FNV prime */ [file:./../../bpf/agent.bpf.c line_num:154 line_col:8]
+  97: (2f) r1 *= r4
+; for (__u32 i = 0; i < MAX_PATH_LEN; i++) { [file:./../../bpf/agent.bpf.c line_num:150 line_col:39]
+  98: (07) r2 += 1
+; for (__u32 i = 0; i < MAX_PATH_LEN; i++) { [file:./../../bpf/agent.bpf.c line_num:150 line_col:2]
+  99: (2d) if r3 > r2 goto pc-8
+; struct path_rule_key key = { [file:./../../bpf/agent.bpf.c line_num:184 line_col:29]
+ 100: (7b) *(u64 *)(r10 -8) = r1
+ 101: (bf) r2 = r10
+ 102: (07) r2 += -16
+; struct rule_action *action = bpf_map_lookup_elem(rules_map, &key); [file:./../../bpf/agent.bpf.c line_num:188 line_col:31]
+ 103: (18) r1 = map[id:610]
+ 105: (85) call __htab_map_lookup_elem#299056
+ 106: (15) if r0 == 0x0 goto pc+1
+ 107: (07) r0 += 64
+; if (action) [file:./../../bpf/agent.bpf.c line_num:189 line_col:6]
+ 108: (15) if r0 == 0x0 goto pc+1
+; return action->allow; [file:./../../bpf/agent.bpf.c line_num:190 line_col:18]
+ 109: (71) r9 = *(u8 *)(r0 +0)
+; if (cfg->enforcement_mode == HOOK_MODE_ENFORCE && !allow) { [file:./../../bpf/agent.bpf.c line_num:411 line_col:11]
+ 110: (71) r1 = *(u8 *)(r8 +0)
+; if (cfg->enforcement_mode == HOOK_MODE_ENFORCE && !allow) { [file:./../../bpf/agent.bpf.c line_num:411 line_col:49]
+ 111: (55) if r1 != 0x1 goto pc+36
+ 112: (bf) r1 = r9
+ 113: (57) r1 &= 255
+ 114: (55) if r1 != 0x0 goto pc+33
+ 115: (b7) r1 = 0
+ 116: (63) *(u32 *)(r10 -16) = r1
+ 117: (bf) r2 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+ 118: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 119: (18) r1 = map[id:608]
+ 121: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 122: (15) if r0 == 0x0 goto pc+3
+; (*val)++; [file:./../../bpf/agent.bpf.c line_num:223 line_col:9]
+ 123: (79) r1 = *(u64 *)(r0 +0)
+ 124: (07) r1 += 1
+ 125: (7b) *(u64 *)(r0 +0) = r1
+ 126: (b7) r9 = 0
+; struct event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0); [file:./../../bpf/agent.bpf.c line_num:233 line_col:20]
+ 127: (18) r1 = map[id:609]
+ 129: (b7) r2 = 296
+ 130: (b7) r3 = 0
+ 131: (85) call bpf_ringbuf_reserve#350768
+ 132: (bf) r8 = r0
+; if (!e) { [file:./../../bpf/agent.bpf.c line_num:234 line_col:6]
+ 133: (55) if r8 != 0x0 goto pc+51
+ 134: (b7) r1 = 2
+ 135: (63) *(u32 *)(r10 -16) = r1
+ 136: (bf) r2 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+ 137: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 138: (18) r1 = map[id:608]
+ 140: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 141: (15) if r0 == 0x0 goto pc+3
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+ 142: (79) r1 = *(u64 *)(r0 +0)
+ 143: (07) r1 += 1
+ 144: (7b) *(u64 *)(r0 +0) = r1
+ 145: (18) r6 = 0xffffffff
+ 147: (05) goto pc+183
+; emit_event(cgroup_id, EVENT_TYPE_EXEC, allow ? DECISION_ALLOWED : DECISION_DENIED, [file:./../../bpf/agent.bpf.c line_num:416 line_col:41]
+ 148: (57) r9 &= 255
+ 149: (b7) r1 = 0
+ 150: (b7) r2 = 1
+ 151: (15) if r9 == 0x0 goto pc+1
+ 152: (b7) r2 = 0
+ 153: (7b) *(u64 *)(r10 -280) = r2
+ 154: (63) *(u32 *)(r10 -16) = r1
+ 155: (bf) r2 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+ 156: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 157: (18) r1 = map[id:608]
+ 159: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 160: (15) if r0 == 0x0 goto pc+3
+; (*val)++; [file:./../../bpf/agent.bpf.c line_num:223 line_col:9]
+ 161: (79) r1 = *(u64 *)(r0 +0)
+ 162: (07) r1 += 1
+ 163: (7b) *(u64 *)(r0 +0) = r1
+ 164: (b7) r9 = 0
+; struct event *e = bpf_ringbuf_reserve(&events, sizeof(*e), 0); [file:./../../bpf/agent.bpf.c line_num:233 line_col:20]
+ 165: (18) r1 = map[id:609]
+ 167: (b7) r2 = 296
+ 168: (b7) r3 = 0
+ 169: (85) call bpf_ringbuf_reserve#350768
+ 170: (bf) r8 = r0
+; if (!e) { [file:./../../bpf/agent.bpf.c line_num:234 line_col:6]
+ 171: (55) if r8 != 0x0 goto pc+84
+ 172: (b7) r1 = 2
+ 173: (63) *(u32 *)(r10 -16) = r1
+ 174: (bf) r2 = r10
+;  [file:./../../bpf/agent.bpf.c line_num:0 line_col:0]
+ 175: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 176: (18) r1 = map[id:608]
+ 178: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 179: (15) if r0 == 0x0 goto pc+3
+; (*val)++; [file:./../../bpf/agent.bpf.c line_num:223 line_col:9]
+ 180: (79) r1 = *(u64 *)(r0 +0)
+ 181: (07) r1 += 1
+ 182: (7b) *(u64 *)(r0 +0) = r1
+ 183: (b7) r6 = 0
+ 184: (05) goto pc+146
+; __builtin_memset(e, 0, sizeof(*e)); [file:./../../bpf/agent.bpf.c line_num:240 line_col:2]
+ 185: (7b) *(u64 *)(r8 +288) = r9
+ 186: (7b) *(u64 *)(r8 +280) = r9
+ 187: (7b) *(u64 *)(r8 +272) = r9
+ 188: (7b) *(u64 *)(r8 +264) = r9
+ 189: (7b) *(u64 *)(r8 +256) = r9
+ 190: (7b) *(u64 *)(r8 +248) = r9
+ 191: (7b) *(u64 *)(r8 +240) = r9
+ 192: (7b) *(u64 *)(r8 +232) = r9
+ 193: (7b) *(u64 *)(r8 +224) = r9
+ 194: (7b) *(u64 *)(r8 +216) = r9
+ 195: (7b) *(u64 *)(r8 +208) = r9
+ 196: (7b) *(u64 *)(r8 +200) = r9
+ 197: (7b) *(u64 *)(r8 +192) = r9
+ 198: (7b) *(u64 *)(r8 +184) = r9
+ 199: (7b) *(u64 *)(r8 +176) = r9
+ 200: (7b) *(u64 *)(r8 +168) = r9
+ 201: (7b) *(u64 *)(r8 +160) = r9
+ 202: (7b) *(u64 *)(r8 +152) = r9
+ 203: (7b) *(u64 *)(r8 +144) = r9
+ 204: (7b) *(u64 *)(r8 +136) = r9
+ 205: (7b) *(u64 *)(r8 +128) = r9
+ 206: (7b) *(u64 *)(r8 +120) = r9
+ 207: (7b) *(u64 *)(r8 +112) = r9
+ 208: (7b) *(u64 *)(r8 +104) = r9
+ 209: (7b) *(u64 *)(r8 +96) = r9
+ 210: (7b) *(u64 *)(r8 +88) = r9
+ 211: (7b) *(u64 *)(r8 +80) = r9
+ 212: (7b) *(u64 *)(r8 +72) = r9
+ 213: (7b) *(u64 *)(r8 +64) = r9
+ 214: (7b) *(u64 *)(r8 +56) = r9
+ 215: (7b) *(u64 *)(r8 +48) = r9
+ 216: (7b) *(u64 *)(r8 +40) = r9
+ 217: (7b) *(u64 *)(r8 +32) = r9
+ 218: (7b) *(u64 *)(r8 +24) = r9
+ 219: (7b) *(u64 *)(r8 +16) = r9
+ 220: (7b) *(u64 *)(r8 +8) = r9
+; e->cgroup_id = cgroup_id; [file:./../../bpf/agent.bpf.c line_num:241 line_col:15]
+ 221: (7b) *(u64 *)(r8 +0) = r7
+; e->timestamp_ns = bpf_ktime_get_ns(); [file:./../../bpf/agent.bpf.c line_num:242 line_col:20]
+ 222: (85) call bpf_ktime_get_ns#258992
+; e->timestamp_ns = bpf_ktime_get_ns(); [file:./../../bpf/agent.bpf.c line_num:242 line_col:18]
+ 223: (7b) *(u64 *)(r8 +8) = r0
+; __u64 pid_tgid = bpf_get_current_pid_tgid(); [file:./../../bpf/agent.bpf.c line_num:243 line_col:19]
+ 224: (85) call bpf_get_current_pid_tgid#258736
+; e->dest_port = dest_port; [file:./../../bpf/agent.bpf.c line_num:250 line_col:15]
+ 225: (6b) *(u16 *)(r8 +32) = r9
+; e->dest_addr_v4 = dest_addr_v4; [file:./../../bpf/agent.bpf.c line_num:249 line_col:18]
+ 226: (63) *(u32 *)(r8 +28) = r9
+ 227: (b7) r7 = 1
+; e->hook_mode = hook_mode; [file:./../../bpf/agent.bpf.c line_num:248 line_col:15]
+ 228: (73) *(u8 *)(r8 +26) = r7
+ 229: (b7) r1 = 257
+; e->type = type; [file:./../../bpf/agent.bpf.c line_num:246 line_col:10]
+ 230: (6b) *(u16 *)(r8 +24) = r1
+; e->pid = (__u32)pid_tgid; [file:./../../bpf/agent.bpf.c line_num:245 line_col:9]
+ 231: (63) *(u32 *)(r8 +16) = r0
+; e->tgid = pid_tgid >> 32; [file:./../../bpf/agent.bpf.c line_num:244 line_col:21]
+ 232: (77) r0 >>= 32
+; e->tgid = pid_tgid >> 32; [file:./../../bpf/agent.bpf.c line_num:244 line_col:10]
+ 233: (63) *(u32 *)(r8 +20) = r0
+ 234: (bf) r1 = r6
+ 235: (67) r1 <<= 32
+ 236: (77) r1 >>= 32
+; if (path && path_len > 0) { [file:./../../bpf/agent.bpf.c line_num:251 line_col:11]
+ 237: (15) if r1 == 0x0 goto pc+7
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:28]
+ 238: (bf) r1 = r8
+ 239: (07) r1 += 36
+; __u32 n = path_len & (MAX_PATH_LEN - 1); [file:./../../bpf/agent.bpf.c line_num:270 line_col:22]
+ 240: (57) r6 &= 255
+ 241: (bf) r3 = r10
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:28]
+ 242: (07) r3 += -272
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:3]
+ 243: (bf) r2 = r6
+ 244: (85) call bpf_probe_read_kernel#-124608
+; bpf_ringbuf_submit(e, 0); [file:./../../bpf/agent.bpf.c line_num:274 line_col:2]
+ 245: (bf) r1 = r8
+ 246: (b7) r2 = 0
+ 247: (85) call bpf_ringbuf_submit#352752
+ 248: (63) *(u32 *)(r10 -16) = r7
+ 249: (bf) r2 = r10
+ 250: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 251: (18) r1 = map[id:608]
+ 253: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 254: (15) if r0 == 0x0 goto pc-110
+ 255: (05) goto pc-114
+; __builtin_memset(e, 0, sizeof(*e)); [file:./../../bpf/agent.bpf.c line_num:240 line_col:2]
+ 256: (7b) *(u64 *)(r8 +288) = r9
+ 257: (7b) *(u64 *)(r8 +280) = r9
+ 258: (7b) *(u64 *)(r8 +272) = r9
+ 259: (7b) *(u64 *)(r8 +264) = r9
+ 260: (7b) *(u64 *)(r8 +256) = r9
+ 261: (7b) *(u64 *)(r8 +248) = r9
+ 262: (7b) *(u64 *)(r8 +240) = r9
+ 263: (7b) *(u64 *)(r8 +232) = r9
+ 264: (7b) *(u64 *)(r8 +224) = r9
+ 265: (7b) *(u64 *)(r8 +216) = r9
+ 266: (7b) *(u64 *)(r8 +208) = r9
+ 267: (7b) *(u64 *)(r8 +200) = r9
+ 268: (7b) *(u64 *)(r8 +192) = r9
+ 269: (7b) *(u64 *)(r8 +184) = r9
+ 270: (7b) *(u64 *)(r8 +176) = r9
+ 271: (7b) *(u64 *)(r8 +168) = r9
+ 272: (7b) *(u64 *)(r8 +160) = r9
+ 273: (7b) *(u64 *)(r8 +152) = r9
+ 274: (7b) *(u64 *)(r8 +144) = r9
+ 275: (7b) *(u64 *)(r8 +136) = r9
+ 276: (7b) *(u64 *)(r8 +128) = r9
+ 277: (7b) *(u64 *)(r8 +120) = r9
+ 278: (7b) *(u64 *)(r8 +112) = r9
+ 279: (7b) *(u64 *)(r8 +104) = r9
+ 280: (7b) *(u64 *)(r8 +96) = r9
+ 281: (7b) *(u64 *)(r8 +88) = r9
+ 282: (7b) *(u64 *)(r8 +80) = r9
+ 283: (7b) *(u64 *)(r8 +72) = r9
+ 284: (7b) *(u64 *)(r8 +64) = r9
+ 285: (7b) *(u64 *)(r8 +56) = r9
+ 286: (7b) *(u64 *)(r8 +48) = r9
+ 287: (7b) *(u64 *)(r8 +40) = r9
+ 288: (7b) *(u64 *)(r8 +32) = r9
+ 289: (7b) *(u64 *)(r8 +24) = r9
+ 290: (7b) *(u64 *)(r8 +16) = r9
+ 291: (7b) *(u64 *)(r8 +8) = r9
+; e->cgroup_id = cgroup_id; [file:./../../bpf/agent.bpf.c line_num:241 line_col:15]
+ 292: (7b) *(u64 *)(r8 +0) = r7
+; e->timestamp_ns = bpf_ktime_get_ns(); [file:./../../bpf/agent.bpf.c line_num:242 line_col:20]
+ 293: (85) call bpf_ktime_get_ns#258992
+; e->timestamp_ns = bpf_ktime_get_ns(); [file:./../../bpf/agent.bpf.c line_num:242 line_col:18]
+ 294: (7b) *(u64 *)(r8 +8) = r0
+; __u64 pid_tgid = bpf_get_current_pid_tgid(); [file:./../../bpf/agent.bpf.c line_num:243 line_col:19]
+ 295: (85) call bpf_get_current_pid_tgid#258736
+; e->dest_port = dest_port; [file:./../../bpf/agent.bpf.c line_num:250 line_col:15]
+ 296: (6b) *(u16 *)(r8 +32) = r9
+; e->dest_addr_v4 = dest_addr_v4; [file:./../../bpf/agent.bpf.c line_num:249 line_col:18]
+ 297: (63) *(u32 *)(r8 +28) = r9
+; e->decision = decision; [file:./../../bpf/agent.bpf.c line_num:247 line_col:14]
+ 298: (79) r1 = *(u64 *)(r10 -280)
+ 299: (73) *(u8 *)(r8 +25) = r1
+ 300: (b7) r7 = 1
+; e->hook_mode = hook_mode; [file:./../../bpf/agent.bpf.c line_num:248 line_col:15]
+ 301: (73) *(u8 *)(r8 +26) = r7
+; e->type = type; [file:./../../bpf/agent.bpf.c line_num:246 line_col:10]
+ 302: (73) *(u8 *)(r8 +24) = r7
+; e->pid = (__u32)pid_tgid; [file:./../../bpf/agent.bpf.c line_num:245 line_col:9]
+ 303: (63) *(u32 *)(r8 +16) = r0
+; e->tgid = pid_tgid >> 32; [file:./../../bpf/agent.bpf.c line_num:244 line_col:21]
+ 304: (77) r0 >>= 32
+; e->tgid = pid_tgid >> 32; [file:./../../bpf/agent.bpf.c line_num:244 line_col:10]
+ 305: (63) *(u32 *)(r8 +20) = r0
+ 306: (bf) r1 = r6
+ 307: (67) r1 <<= 32
+ 308: (77) r1 >>= 32
+; if (path && path_len > 0) { [file:./../../bpf/agent.bpf.c line_num:251 line_col:11]
+ 309: (15) if r1 == 0x0 goto pc+7
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:28]
+ 310: (bf) r1 = r8
+ 311: (07) r1 += 36
+; __u32 n = path_len & (MAX_PATH_LEN - 1); [file:./../../bpf/agent.bpf.c line_num:270 line_col:22]
+ 312: (57) r6 &= 255
+ 313: (bf) r3 = r10
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:28]
+ 314: (07) r3 += -272
+; bpf_probe_read_kernel(e->path, n, path); [file:./../../bpf/agent.bpf.c line_num:271 line_col:3]
+ 315: (bf) r2 = r6
+ 316: (85) call bpf_probe_read_kernel#-124608
+ 317: (b7) r6 = 0
+; bpf_ringbuf_submit(e, 0); [file:./../../bpf/agent.bpf.c line_num:274 line_col:2]
+ 318: (bf) r1 = r8
+ 319: (b7) r2 = 0
+ 320: (85) call bpf_ringbuf_submit#352752
+ 321: (63) *(u32 *)(r10 -16) = r7
+ 322: (bf) r2 = r10
+ 323: (07) r2 += -16
+; __u64 *val = bpf_map_lookup_elem(&event_counters, &idx); [file:./../../bpf/agent.bpf.c line_num:221 line_col:15]
+ 324: (18) r1 = map[id:608]
+ 326: (85) call percpu_array_map_lookup_elem#320000
+; if (val) [file:./../../bpf/agent.bpf.c line_num:222 line_col:6]
+ 327: (15) if r0 == 0x0 goto pc+3
+; (*val)++; [file:./../../bpf/agent.bpf.c line_num:223 line_col:9]
+ 328: (79) r1 = *(u64 *)(r0 +0)
+ 329: (07) r1 += 1
+ 330: (7b) *(u64 *)(r0 +0) = r1
+; int BPF_PROG(lsm_exec, struct linux_binprm *bprm, int ret) [file:./../../bpf/agent.bpf.c line_num:376 line_col:5]
+ 331: (bf) r0 = r6
+ 332: (95) exit

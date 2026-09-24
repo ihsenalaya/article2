@@ -1,0 +1,49 @@
+{
+    "apiVersion": "aiops.imperium.io/v1alpha1",
+    "kind": "RuntimePlacementEvidence",
+    "metadata": {
+        "creationTimestamp": "2026-08-01T09:07:10Z",
+        "generation": 1,
+        "name": "rag-pipeline",
+        "namespace": "aiops-system",
+        "resourceVersion": "28657",
+        "uid": "e02cefbf-9fbd-4adc-9444-48e649323c1c"
+    },
+    "spec": {
+        "nodeName": "article2-worker",
+        "policyRef": {
+            "name": "rag-pipeline",
+            "namespace": "workloads"
+        },
+        "targetRef": {
+            "name": "rag-pipeline",
+            "namespace": "workloads"
+        }
+    },
+    "status": {
+        "agentIntegrity": {
+            "digestVerified": true,
+            "imageDigest": "runtime-guard-ebpf-agent:dev@sha256:4a4124e4e14280edf1a34a86300e9a0e183d7d376b1e1221328b2655f6a68a4f"
+        },
+        "behavior": {
+            "connectAllowed": 42,
+            "connectDenied": 3,
+            "deviceAccessDenied": 95,
+            "execAllowed": 114,
+            "fileOpenAllowed": 57,
+            "fileOpenDenied": 748
+        },
+        "cgroupID": "77859",
+        "conformance": "violation",
+        "evidenceMode": "simulated",
+        "podUID": "88940424-6185-42f8-9c4a-805b457e88ae",
+        "signature": {
+            "algorithm": "ed25519",
+            "expiresAt": "2026-08-01T10:18:50Z",
+            "issuedAt": "2026-08-01T10:08:50Z",
+            "keyIdentifier": "agent-article2-worker",
+            "payloadDigest": "c5fd6fb39f11d02bbe54148f986be7b84a4a1c175c8feef33df4993fcab401b4",
+            "signature": "b4aab95d2008c396c3478ef2e916904e5715d40c915e3453305355159435d68f35a8eb6d1937f2f8fa40c871e27f71b40b4673b67d69c11cbdf950c2a254a608"
+        }
+    }
+}

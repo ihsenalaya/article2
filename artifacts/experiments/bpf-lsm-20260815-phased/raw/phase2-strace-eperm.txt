@@ -1,0 +1,14 @@
+=== ALLOW target ===
+allow-target exit code: 0
+
+=== DENY target ===
+deny-target exit code: 126
+
+=== side effect check (marker file should NOT exist) ===
+bash: line 9: /tmp/runtimeguard-deny-target: Operation not permitted
+ls: cannot access '/tmp/deny-marker-file': No such file or directory
+
+=== strace errno on deny-target (precise kernel error) ===
+execve("/tmp/runtimeguard-deny-target", ["/tmp/runtimeguard-deny-target", "/tmp/deny-marker-file"], 0x7ffeeed3c7f0 /* 17 vars */) = -1 EPERM (Operation not permitted)
+strace: exec: Operation not permitted
++++ exited with 1 +++

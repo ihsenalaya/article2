@@ -1,0 +1,7 @@
+op,condition,n,n_success,success_rate,n_eperm,eperm_rate,n_side_effect_observed,pre_effect_denial_demonstrated
+exec,allow,30,30,1.0,0,0.0,30,False
+exec,deny,30,0,0.0,0,0.0,0,False
+file,allow,15,15,1.0,0,0.0,15,False
+file,deny,15,15,1.0,0,0.0,15,False
+network,allow,15,0,0.0,0,0.0,0,False
+network,deny,15,0,0.0,0,0.0,0,False

@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        args:
+        - --leader-elect
+        - --agent-image-digest=acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:2757b2bb777c7ffa198e8b911be2397a40bf20f34ad437de0c74bee216ee66ef

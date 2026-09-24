@@ -1,0 +1,4 @@
+n,concurrency,rep,run_id,outcome,git_commit,convergence_rate,ready_time_mean,ready_time_max,ready_time_min,n_metrics_samples,operator_cpu_milli_max,agent_cpu_milli_max,rca_path,outcome_breakdown
+500,50,1,e3-rep1-6995,success,e98add2778b789031c63f479db8c8b5c7f3f787b,0.202,22.917295616452055,46.69606041908264,4.500595569610596,124,132,146,<repo>/artifacts/experiments/scale/scripts/../raw/e3-rep1-6995.rca.txt,"{""converged"": 101, ""failed: pod never scheduled"": 399}"
+500,50,2,e3-rep2-14011,success,e98add2778b789031c63f479db8c8b5c7f3f787b,0.0,,,,165,130,220,<repo>/artifacts/experiments/scale/scripts/../raw/e3-rep2-14011.rca.txt,"{""timed_out"": 101, ""failed: pod never scheduled"": 399}"
+500,50,3,e3-rep3-1147,success,e98add2778b789031c63f479db8c8b5c7f3f787b,0.0,,,,164,141,225,<repo>/artifacts/experiments/scale/scripts/../raw/e3-rep3-1147.rca.txt,"{""timed_out"": 101, ""failed: pod never scheduled"": 399}"

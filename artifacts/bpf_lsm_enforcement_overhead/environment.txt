@@ -1,0 +1,57 @@
+BPF-LSM enforcement-path microbenchmark — environment
+=======================================================
+
+RuntimeGuard commit: 330134e357a73d4397b6e51a9879e08824c00fa3 (330134e)
+  NOTE: this experiment's own code (ebpf-agent/bpf/{common.h,agent.bpf.c},
+  internal/loader/loader.go, cmd/agent/main.go -- the benchmark_mode field,
+  the C1/C2 branches, DetachHook/ReattachHook/SetBenchmarkMode, and the
+  opt-in --benchmark-mode-enabled control loop) is layered on top of this
+  commit as an uncommitted working-tree change at the time this experiment
+  ran. See ../../../DEBUG-HANDOFF.md and the session's own commit history
+  for the surrounding context; this experiment's own diff is small and
+  entirely additive (see README.md).
+
+Cluster: deploy/azure/cpu-campaign-20260813 (real Azure, not kind)
+Kubernetes: client v1.36.3, server v1.30.14 (kubeadm)
+
+Worker node (where the bench-pod and all measurements run):
+  vm-a2-cpucampaign-20260813-worker
+  uname -a: Linux vm-a2-cpucampaign-20260813-worker 6.8.0-1064-azure
+    #72~22.04.1-Ubuntu SMP Wed Jul 22 23:39:45 UTC 2026 x86_64 GNU/Linux
+  VM size: Standard_D2s_v7 (2 vCPU / 8 GiB)
+  OS: Ubuntu 22.04.5 LTS
+  Container runtime: containerd 2.2.1
+  cgroup mode: cgroup2fs (cgroup v2 unified hierarchy, confirmed via
+    `stat -fc %T /sys/fs/cgroup`)
+
+BPF-LSM active-state check (per experiment protocol: never inferred from
+CONFIG_BPF_LSM=y alone):
+  $ cat /sys/kernel/security/lsm
+  lockdown,capability,landlock,yama,apparmor,bpf
+  -- "bpf" present, confirmed directly on the worker node.
+
+Loaded LSM programs (bpftool prog list, worker node):
+  373: lsm  name lsm_exec        tag 1e8950fd86db097b  gpl
+  374: lsm  name lsm_file_open   tag 664cfa2a55d93af6  gpl
+  375: lsm  name lsm_connect     tag 9cea04d602dd52a8  gpl
+  376: lsm  name lsm_bpf_lock    tag 8daef5e8a308901c  gpl (loaded, NOT
+       attached -- BPF_LOCK_ENABLED=false, unrelated to this experiment)
+
+Attached links at experiment start (bpftool link list, worker node):
+  49: tracing  prog 374  prog_type lsm  attach_type lsm_mac  (lsm_file_open)
+  51: tracing  prog 375  prog_type lsm  attach_type lsm_mac  (lsm_connect)
+  53: tracing  prog 373  prog_type lsm  attach_type lsm_mac  (lsm_exec)
+
+Toolchain used to build the ebpf-agent image for this experiment:
+  cilium/ebpf v0.22.0, LLVM/clang 14.0.0-1ubuntu1.1 (Ubuntu), Go 1.25
+  (via `go generate` on the worker node itself -- see
+  ebpf-agent/internal/bpfobjs/gen.go)
+
+Image digests deployed for this experiment run:
+  runtime-guard-ebpf-agent@sha256:e4d88b1990f52725983b4ec2391ef4eb9b24520d7916082bfef14a6063c217f2
+  runtime-guard-operator@sha256:96d7653ea05b88f6c6be0a11562427fa24a6335caa2570f5dd18ff7e650b6960
+  (operator unmodified for this experiment; only ebpf-agent changed)
+
+Full raw command outputs (uname, /sys/kernel/security/lsm, bpftool prog/link
+list) are also archived per-operation-class in validation/ alongside map
+dumps taken during the actual measurement run.

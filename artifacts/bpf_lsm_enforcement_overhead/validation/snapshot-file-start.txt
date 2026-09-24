@@ -1,0 +1,41 @@
+=== bpftool link list ===
+1: tracing  prog 2  
+	prog_type tracing  attach_type modify_return  
+	target_obj_id 1  target_btf_id 66971  
+49: tracing  prog 374  
+	prog_type lsm  attach_type lsm_mac  
+	target_obj_id 1  target_btf_id 125885  
+51: tracing  prog 375  
+	prog_type lsm  attach_type lsm_mac  
+	target_obj_id 1  target_btf_id 126072  
+81: tracing  prog 373  
+	prog_type lsm  attach_type lsm_mac  
+	target_obj_id 1  target_btf_id 125860
+
+=== bpftool map dump cgroup_configs ===
+[{
+        "key": 28978,
+        "value": {
+            "enforcement_mode": 1,
+            "exec_default_allow": 1,
+            "file_default_allow": 1,
+            "net_default_allow": 1,
+            "device_default_allow": 0,
+            "benchmark_mode": 0,
+            "_pad": [0,0
+            ]
+        }
+    },{
+        "key": 28899,
+        "value": {
+            "enforcement_mode": 1,
+            "exec_default_allow": 1,
+            "file_default_allow": 1,
+            "net_default_allow": 1,
+            "device_default_allow": 0,
+            "benchmark_mode": 0,
+            "_pad": [0,0
+            ]
+        }
+    }
+]

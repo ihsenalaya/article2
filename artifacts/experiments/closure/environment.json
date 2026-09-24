@@ -1,0 +1,17 @@
+{
+  "task": "TASK-04",
+  "experiment": "A — admission-to-release closure",
+  "git_commit": "a74c545a6d9283ecf55fba6e7dace646615ac7c9",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task03@sha256:191e459e400c15c529302b6fac0e1eda7a62a95bc05169954c74b7f7504cf171",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task04@sha256:00c79979596a89a5e7a06b14ceba113df4ccb20dbcfd3257d840e03a05cb5370",
+    "launcher": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-launcher:cpu-campaign-20260813-task03@sha256:d4b7c58006b2d898e8d4b2ab6cdb26f2936f6a886606a44a9d95e4cf9abbce16"
+  },
+  "note_on_agent_image": "The agent image was rebuilt from task03 specifically to add a test-harness-only, opt-in, per-pod-annotation delay hook (experiment.article2.io/inject-ready-delay-ms) used by condition A2. It has zero effect on any pod without that annotation -- see ebpf-agent/cmd/agent/main.go reconcileOnce. The operator image is unchanged from Task 03 (task03 tag).",
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md)",
+  "nodes": ["vm-a2-cpucampaign-20260813-cp", "vm-a2-cpucampaign-20260813-worker"],
+  "clock_domains": "CLOCK_MONOTONIC_RAW (userspace: launcher, agent t_p) and bpf_ktime_get_ns() (kernel: t_c) -- see artifacts/timing/timestamp-semantics.md for resolution/skew measurements this experiment relies on"
+}

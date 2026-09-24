@@ -1,0 +1,3 @@
+time=2026-08-01T10:03:44.519Z level=INFO msg="determined enforcement mode" mode=audit lsmPath=/host/sys/kernel/security/lsm
+time=2026-08-01T10:03:42.376Z level=INFO msg="determined enforcement mode" mode=audit lsmPath=/host/sys/kernel/security/lsm
+time=2026-08-01T10:06:37.664Z level=INFO msg="revoked access" policy=workloads/gpu-workload cgroupIDs="[77927 77519]"

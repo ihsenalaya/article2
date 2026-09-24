@@ -1,0 +1,144 @@
+# Operator RBAC + Deployment for the cpu-campaign-20260813 cluster.
+# CRDs (RuntimeSecurityPolicy, RuntimePlacementEvidence) and the vendored
+# upstream AIPlacementDecision CRD are applied separately from
+# operator/config/crd/bases/*.yaml and deploy/kind/upstream-aiplacementdecision-crd.yaml
+# (source of truth, not duplicated here).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-guard-operator-controller-manager
+  namespace: runtime-guard-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: runtime-guard-operator-leader-election-role
+  namespace: runtime-guard-operator-system
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-guard-operator-manager-role
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "patch", "update", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["aiplacementdecisions"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences", "runtimesecuritypolicies"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/finalizers", "runtimesecuritypolicies/finalizers"]
+    verbs: ["update"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/status", "runtimesecuritypolicies/status"]
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: runtime-guard-operator-leader-election-rolebinding
+  namespace: runtime-guard-operator-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: runtime-guard-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-operator-controller-manager
+    namespace: runtime-guard-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-guard-operator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: runtime-guard-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-operator-controller-manager
+    namespace: runtime-guard-operator-system
+---
+# Trust anchor ConfigMap (attestation-scheduler-public-key, in aiops-system)
+# and the agent signing key Secret are created imperatively by
+# deploy-runtimeguard.sh from .run/secrets/*.env (gitignored) -- not defined
+# here, so applying this file can never clobber the real key material with a
+# placeholder regardless of apply order.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runtime-guard-operator-controller-manager
+  namespace: runtime-guard-operator-system
+  labels:
+    control-plane: controller-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      serviceAccountName: runtime-guard-operator-controller-manager
+      imagePullSecrets:
+        - name: acr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: manager
+          image: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator@sha256:96d7653ea05b88f6c6be0a11562427fa24a6335caa2570f5dd18ff7e650b6960
+          # Always, not IfNotPresent -- see agent-daemonset.yaml's identical
+          # comment (Task 08 stale-cached-image finding applies equally here).
+          imagePullPolicy: Always
+          command: ["/manager"]
+          args:
+            - --leader-elect
+          env:
+            - name: TRUST_ANCHOR_NAMESPACE
+              value: aiops-system
+            - name: TRUST_ANCHOR_CONFIGMAP_NAME
+              value: attestation-scheduler-public-key
+            - name: TRUST_ANCHOR_CONFIGMAP_KEY
+              value: publicKeyHex
+            - name: AGENT_IMAGE_DIGEST
+              value: "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:e4d88b1990f52725983b4ec2391ef4eb9b24520d7916082bfef14a6063c217f2"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

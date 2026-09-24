@@ -1,0 +1,16 @@
+2026-08-13T12:41:26Z	INFO	setup	starting manager
+2026-08-13T12:41:26Z	INFO	controller-runtime.metrics	Starting metrics server
+2026-08-13T12:41:26Z	INFO	controller-runtime.metrics	Serving metrics server	{"bindAddress": ":8080", "secure": false}
+2026-08-13T12:41:26Z	INFO	starting server	{"kind": "health probe", "addr": "[::]:8081"}
+I0813 12:41:26.325895       1 leaderelection.go:250] attempting to acquire leader lease runtime-guard-operator-system/a63b8c7f.imperium.io...
+I0813 12:41:26.348230       1 leaderelection.go:260] successfully acquired lease runtime-guard-operator-system/a63b8c7f.imperium.io
+2026-08-13T12:41:26Z	DEBUG	events	runtime-guard-operator-controller-manager-5f56974687-4r8b9_4d335cc6-eb47-4ed1-948c-5fabc8c1a88f became leader	{"type": "Normal", "object": {"kind":"Lease","namespace":"runtime-guard-operator-system","name":"a63b8c7f.imperium.io","uid":"a6e4a501-b40a-42a9-8cad-58c47ed87dca","apiVersion":"coordination.k8s.io/v1","resourceVersion":"2567"}, "reason": "LeaderElection"}
+2026-08-13T12:41:26Z	INFO	Starting EventSource	{"controller": "aiplacementdecision", "controllerGroup": "aiops.imperium.io", "controllerKind": "AIPlacementDecision", "source": "kind source: *upstream.AIPlacementDecision"}
+2026-08-13T12:41:26Z	INFO	Starting Controller	{"controller": "aiplacementdecision", "controllerGroup": "aiops.imperium.io", "controllerKind": "AIPlacementDecision"}
+2026-08-13T12:41:26Z	INFO	Starting EventSource	{"controller": "runtimeplacementevidence", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimePlacementEvidence", "source": "kind source: *v1alpha1.RuntimePlacementEvidence"}
+2026-08-13T12:41:26Z	INFO	Starting Controller	{"controller": "runtimeplacementevidence", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimePlacementEvidence"}
+2026-08-13T12:41:26Z	INFO	Starting EventSource	{"controller": "runtimesecuritypolicy", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimeSecurityPolicy", "source": "kind source: *v1alpha1.RuntimeSecurityPolicy"}
+2026-08-13T12:41:26Z	INFO	Starting Controller	{"controller": "runtimesecuritypolicy", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimeSecurityPolicy"}
+2026-08-13T12:41:26Z	INFO	Starting workers	{"controller": "runtimeplacementevidence", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimePlacementEvidence", "worker count": 1}
+2026-08-13T12:41:26Z	INFO	Starting workers	{"controller": "aiplacementdecision", "controllerGroup": "aiops.imperium.io", "controllerKind": "AIPlacementDecision", "worker count": 1}
+2026-08-13T12:41:26Z	INFO	Starting workers	{"controller": "runtimesecuritypolicy", "controllerGroup": "aiops.imperium.io", "controllerKind": "RuntimeSecurityPolicy", "worker count": 1}

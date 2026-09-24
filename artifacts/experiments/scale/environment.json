@@ -1,0 +1,21 @@
+{
+  "task": "TASK-08",
+  "experiment": "E — scalability with in-cluster generator",
+  "git_commit_note": "operator/cmd/scale-generator (new tool), operator/Dockerfile.scale-generator, operator/go.mod (k8s.io/metrics dependency) are uncommitted working-tree additions at run time, built into the scale-generator image referenced below, and are committed together with this experiment directory as the single Task 08 commit immediately after this file is written. No changes were made to the operator or ebpf-agent binaries themselves — those remain the Task 06 images (unchanged since Task 06/07).",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task06@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5",
+    "scale_generator": "acrarticle2ebpftm2ogg.azurecr.io/scale-generator:task08-qpsfix@sha256:3c4889a3e518c50fcdc840af6d2b42b6b1b9e2e67bfe5c9f26cf38365d1b6a0c"
+  },
+  "note_on_scale_generator_tag": "An earlier tag, task08-final, fixed a stale-cached-image bug (missing imagePullPolicy defaulted to IfNotPresent, so the node kept running the very first ACR build despite many rebuilds -- root-caused via imageID digest inspection, see summary.md). task08-qpsfix additionally raises client-go's QPS/Burst (200/400 vs the 5/10 default) on the generator's own REST client, eliminating client-side-throttling log lines that -- because container runtimes interleave stdout+stderr into one combined log stream -- could otherwise land ahead of the generator's single JSON result line and corrupt capture at N>=50. Both fixes are cumulative in this final tag.",
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md; Task 10 addresses real BPF-LSM enforcement separately)",
+  "nodes": ["vm-a2-cpucampaign-20260813-cp", "vm-a2-cpucampaign-20260813-worker"],
+  "node_capacity_note": "Both nodes report allocatable.pods=110. The control-plane node is tainted node-role.kubernetes.io/control-plane:NoSchedule, so all workload pods (system + this experiment's) compete for the single worker node's 110-pod ceiling. This is the dominant constraint governing E1's N=100 tier and E3's 500-policy case -- see summary.md and exclusions.md.",
+  "evidence_tick_interval_seconds": 30,
+  "evidence_namespace": "aiops-system",
+  "acr_pull_secret_incident": "Mid-campaign, both cluster VMs were deallocated by a daily 23:00 UTC DevTestLab auto-shutdown schedule (a default this Terraform-provisioned resource group had enabled, not something this campaign set intentionally). VMs were restarted and the schedule disabled to prevent recurrence. The restart surfaced a second, independent issue: the workloads/runtime-guard-*-system namespaces' acr-pull-secret contained a short-lived (~3h15m) ACR OAuth refresh token that had expired during the outage, causing ImagePullBackOff on every subsequent scale-generator Job. Fixed by enabling the ACR's admin user and recreating the pull secrets with the resulting long-lived static credential (rg-a2-cpucampaign-20260813/acrarticle2ebpftm2ogg). See summary.md and TASK_08_REVIEW.md for the full incident timeline, including a real defense-in-depth bug this incident exposed in scripts/lib.sh's job-failure diagnostic path."
+}

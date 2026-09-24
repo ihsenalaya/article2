@@ -1,0 +1,96 @@
+{
+    "apiVersion": "aiops.imperium.io/v1alpha1",
+    "kind": "RuntimeSecurityPolicy",
+    "metadata": {
+        "creationTimestamp": "2026-08-01T09:07:02Z",
+        "generation": 8,
+        "name": "rag-pipeline",
+        "namespace": "workloads",
+        "ownerReferences": [
+            {
+                "apiVersion": "aiops.imperium.io/v1alpha1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "AIPlacementDecision",
+                "name": "rag-pipeline",
+                "uid": "f79afdd5-66a2-4e91-80d8-dbf5e5da8a85"
+            }
+        ],
+        "resourceVersion": "28182",
+        "uid": "3feacad7-55a3-4bfc-8fcd-31ca2e66b576"
+    },
+    "spec": {
+        "agentIntegrity": {
+            "expectedImageDigest": "runtime-guard-ebpf-agent:dev@sha256:4a4124e4e14280edf1a34a86300e9a0e183d7d376b1e1221328b2655f6a68a4f"
+        },
+        "binding": {
+            "imageDigest": "test-image-digest",
+            "modelDigest": "test-model-digest",
+            "nodeIdentity": "article2-worker",
+            "podSpecHash": "test-pod-spec-hash",
+            "podUID": "88940424-6185-42f8-9c4a-805b457e88ae",
+            "runtimeClass": "kata-qemu-snp"
+        },
+        "bpfLock": {},
+        "deviceAccess": {
+            "defaultAction": "deny"
+        },
+        "enforcementMode": "audit",
+        "exec": {
+            "allowedPaths": [
+                "/bin/sh",
+                "/bin/cat",
+                "/usr/bin/wget",
+                "/usr/bin/curl",
+                "/sbin/apk",
+                "/bin/sleep"
+            ],
+            "defaultAction": "deny"
+        },
+        "fileAccess": {
+            "allowedPathPrefixes": [
+                "/documents/doc1.txt",
+                "/documents/doc2.txt",
+                "/documents/doc3.txt"
+            ],
+            "defaultAction": "deny"
+        },
+        "networkEgress": {
+            "allowedCIDRs": [
+                "10.96.22.118/32",
+                "10.96.0.10/32",
+                "127.0.0.1/32"
+            ],
+            "defaultAction": "deny"
+        },
+        "placementDecisionRef": {
+            "name": "rag-pipeline",
+            "namespace": "workloads"
+        },
+        "targetRef": {
+            "name": "rag-pipeline",
+            "namespace": "workloads"
+        }
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-08-01T10:04:50Z",
+                "message": "placement token verified against trust anchor",
+                "reason": "Verified",
+                "status": "True",
+                "type": "Verified"
+            },
+            {
+                "lastTransitionTime": "2026-08-01T09:07:02Z",
+                "message": "policy schema accepted; agent integrity/enforcement status pending node agent (Phase 4)",
+                "reason": "PolicyAccepted",
+                "status": "True",
+                "type": "Ready"
+            }
+        ],
+        "decision": "active",
+        "observedGeneration": 8,
+        "verificationStatus": "Verified"
+    }
+}

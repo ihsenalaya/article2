@@ -1,0 +1,2 @@
+n_total,n_uid_changed,n_applied_cgroups_unchanged,n_evidence_not_incorrectly_bound,n_refusal_log_confirmed,n_pass_policy_did_not_bind_to_b,pass_rate
+10,10,10,10,10,10,1.0

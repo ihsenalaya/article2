@@ -1,0 +1,17 @@
+<repo>/operator/bin/controller-gen-v0.18.0 rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+<repo>/operator/bin/controller-gen-v0.18.0 object:headerFile="hack/boilerplate.go.txt" paths="./..."
+go fmt ./...
+go vet ./...
+KUBEBUILDER_ASSETS="<repo>/operator/bin/k8s/1.29.0-linux-amd64" go test $(go list ./... | grep -v /e2e) -coverprofile cover.out
+	github.com/ihsenalaya/runtime-guard-operator/api/v1alpha1		coverage: 0.0% of statements
+	github.com/ihsenalaya/runtime-guard-operator/cmd		coverage: 0.0% of statements
+	github.com/ihsenalaya/runtime-guard-operator/cmd/gen-keypair		coverage: 0.0% of statements
+	github.com/ihsenalaya/runtime-guard-operator/cmd/mint-test-decision		coverage: 0.0% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/cmd/runtime-guard-launcher	(cached)	coverage: 15.1% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/cmd/verify-evidence	(cached)	coverage: 64.8% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/internal/controller	11.257s	coverage: 77.0% of statements
+	github.com/ihsenalaya/runtime-guard-operator/internal/upstream		coverage: 0.0% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/pkg/crypto	(cached)	coverage: 64.6% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/pkg/evidence	(cached)	coverage: 68.8% of statements
+ok  	github.com/ihsenalaya/runtime-guard-operator/pkg/token	(cached)	coverage: 78.6% of statements
+	github.com/ihsenalaya/runtime-guard-operator/test/utils		coverage: 0.0% of statements

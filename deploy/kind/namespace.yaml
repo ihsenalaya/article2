@@ -1,0 +1,7 @@
+# Namespace hosting the trust-anchor ConfigMap (article 1 scheduler's Ed25519
+# public key) that the Runtime Guard Operator reads. Matches the Operator's
+# default --trust-anchor-namespace flag.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiops-system

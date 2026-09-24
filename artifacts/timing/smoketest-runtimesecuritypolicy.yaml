@@ -1,0 +1,84 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-13T13:02:02Z"
+  generation: 2
+  name: t03-smoketest
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: t03-smoketest
+    uid: 0980c7c3-9035-4374-b6c6-ee80d8469d0d
+  resourceVersion: "5098"
+  uid: 0f68ab24-d235-42b8-8bb4-4fa46ff43729
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:1d9f44699b21f03cc2b7f4bf612a21eb6c21f93877edd5623dc2ac193c53aa72
+  binding:
+    decisionEpoch: 1
+    decisionID: workloads/t03-smoketest
+    decisionNonce: "1786626111805944437"
+    decisionVersion: 1
+    imageDigest: test-image-digest
+    modelDigest: test-model-digest
+    nodeIdentity: vm-a2-cpucampaign-20260813-worker
+    podSpecHash: test-pod-spec-hash
+    podUID: 5cbdb231-d249-4d98-a374-686f9dad599a
+    runtimeClass: kata-qemu-snp
+  bpfLock: {}
+  derivation:
+    decisionHash: b19b91d1cca57a3de1f7246882c853b423425c09c743753b840ff5a64687aa42
+    derivationVersion: runtime-guard-policy-derivation/v1
+    evidenceHash: test-evidence-hash
+    policyHash: a1ad1a98b45726691a9f1d28257c42fb48a145c621e6274015852e0227a9b950
+    tokenHash: b39c791ecd10c25ade0bc06df527a3bd44c316eeaec714263e6c850aa22ea9e6
+    upstreamPolicyHash: test-policy-hash
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: audit
+  exec:
+    defaultAction: deny
+  fileAccess:
+    defaultAction: deny
+  networkEgress:
+    defaultAction: deny
+  placementDecisionRef:
+    name: t03-smoketest
+    namespace: workloads
+  targetRef:
+    name: t03-smoketest
+    namespace: workloads
+status:
+  appliedCgroupIDs:
+  - "11593"
+  - "11514"
+  appliedNodeName: vm-a2-cpucampaign-20260813-worker
+  appliedPolicyGeneration: 2
+  conditions:
+  - lastTransitionTime: "2026-08-13T13:02:22Z"
+    message: placement token verified against trust anchor
+    reason: Verified
+    status: "True"
+    type: Verified
+  - lastTransitionTime: "2026-08-13T13:02:02Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-13T13:02:05Z"
+    message: policy generation 2 applied to 2 cgroup(s) on node vm-a2-cpucampaign-20260813-worker
+    observedGeneration: 2
+    reason: PolicyApplied
+    status: "True"
+    type: EnforcementReady
+  decision: active
+  enforcementReadyAt: "2026-08-13T13:02:25Z"
+  enforcementReadyMonotonicNs: 2671175611193
+  evidenceMode: simulated
+  firstObservedOperationMonotonicNs: 2672737249574
+  observedGeneration: 2
+  verificationStatus: Verified

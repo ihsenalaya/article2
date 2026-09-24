@@ -1,0 +1,2 @@
+[pod/runtime-guard-agent-fhkjs/agent] time=2026-08-13T12:41:27.336Z level=INFO msg="determined enforcement mode" mode=audit lsmPath=/host/sys/kernel/security/lsm
+[pod/runtime-guard-agent-xlvp7/agent] time=2026-08-13T12:41:26.543Z level=INFO msg="determined enforcement mode" mode=audit lsmPath=/host/sys/kernel/security/lsm

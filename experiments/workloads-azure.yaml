@@ -1,0 +1,218 @@
+# Phase 9 evaluation workloads for the real AKS + confidential H100
+# environment. Same 3 workload profiles as experiments/workloads-kind.yaml
+# (same real model file, same attack-scenario shape), adapted for two real
+# differences from kind:
+#
+# 1. Model weights are fetched via an initContainer + emptyDir instead of a
+#    hostPath pre-seeded on kind's docker-based nodes -- AKS VMSS nodes
+#    aren't easily pre-seeded that way. Same real, small (~940MB),
+#    Apache-2.0 licensed model as Phase 5 (Qwen/Qwen2.5-0.5B-Instruct,
+#    sha256 fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe),
+#    for direct comparability with the kind results.
+# 2. gpu-workload gets a toleration + nodeSelector for the confidential H100
+#    pool (real hardware placement, not simulated), and reads
+#    /dev/nvidia0 -- this real AKS node's NVIDIA driver could not be
+#    installed in the time available (see EXPERIMENTS_LOG.md Phase 9,
+#    UKI/vmlinuz incompatibility with the generic driver installer), so the
+#    device node genuinely does not exist here either. This still exercises
+#    the same real openat/file_open syscall + eBPF hook path as kind's
+#    "simulated" version -- the hook fires on the attempted path regardless
+#    of whether the device backing exists -- but does NOT constitute the
+#    real-device revalidation the original Phase 5 plan intended. Reported
+#    honestly as a real, unresolved limitation, not fabricated as validated.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workloads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allowed-svc
+  namespace: workloads
+spec:
+  selector:
+    app: allowed-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allowed-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: allowed-endpoint }
+  template:
+    metadata:
+      labels: { app: allowed-endpoint }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forbidden-svc
+  namespace: workloads
+spec:
+  selector:
+    app: forbidden-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forbidden-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: forbidden-endpoint }
+  template:
+    metadata:
+      labels: { app: forbidden-endpoint }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+# Workload 1: pure LLM inference profile.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: llm-inference
+  namespace: workloads
+  labels: { workload: llm-inference }
+spec:
+  initContainers:
+    - name: fetch-model
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          apk add --no-cache wget >/dev/null 2>&1
+          wget -q -O /models/model.safetensors \
+            https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /models/model.safetensors > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+  volumes:
+    - name: models
+      emptyDir: {}
+---
+# Workload 2: RAG pipeline profile.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-documents
+  namespace: workloads
+data:
+  doc1.txt: "Runtime Guard binds enforcement to a signed placement decision."
+  doc2.txt: "The eBPF agent maps pod UID to cgroup ID to attribute events."
+  doc3.txt: "Attestation-bound runtime conformance is property P5."
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rag-pipeline
+  namespace: workloads
+  labels: { workload: rag-pipeline }
+spec:
+  containers:
+    - name: qdrant
+      image: qdrant/qdrant:v1.11.0
+      ports:
+        - containerPort: 6333
+    - name: client
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          apk add --no-cache curl >/dev/null 2>&1
+          while true; do
+            for f in /documents/*.txt; do cat "$f" > /dev/null 2>&1; done
+            curl -s -m 2 -o /dev/null http://localhost:6333/collections || true
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: documents
+          mountPath: /documents
+          readOnly: true
+  volumes:
+    - name: documents
+      configMap:
+        name: rag-documents
+---
+# Workload 3: GPU-profile workload -- real placement on the confidential
+# H100 node pool (toleration + nodeSelector), see file header for the
+# device-driver caveat.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-workload
+  namespace: workloads
+  labels: { workload: gpu-workload }
+spec:
+  nodeSelector:
+    kubernetes.azure.com/agentpool: gpuh100
+  tolerations:
+    - key: "sku"
+      operator: "Equal"
+      value: "gpu-confidential"
+      effect: "NoSchedule"
+  initContainers:
+    - name: fetch-model
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          apk add --no-cache wget >/dev/null 2>&1
+          wget -q -O /models/model.safetensors \
+            https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /models/model.safetensors > /dev/null 2>&1
+            cat /dev/nvidia0 > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+  volumes:
+    - name: models
+      emptyDir: {}

@@ -1,0 +1,51 @@
+=== independent ground truth, BEFORE the 10x10 test batch (bpftool, not the loader's own self-report) ===
+30: hash  name decisions  flags 0x0
+	key 32B  value 1B  max_entries 8  memlock 2048B
+	btf_id 129
+31: array  name counters  flags 0x0
+	key 4B  value 8B  max_entries 4  memlock 416B
+	btf_id 130
+
+$ sudo bpftool map dump id 30
+[{
+        "key": {
+            "path": "/tmp/runtimeguard-allow-target"
+        },
+        "value": 1
+    },{
+        "key": {
+            "path": "/tmp/runtimeguard-deny-target"
+        },
+        "value": 0
+    }
+]
+
+=== test results ===
+ALLOW: ok=10 fail=0 / 10
+DENY: eperm=10 other=0 / 10
+(no "SIDE EFFECT OCCURRED" lines -- zero occurrences across 10 deny reps)
+
+=== independent ground truth, AFTER the 10x10 test batch (unchanged, as expected) ===
+$ sudo bpftool map dump id 30
+[{
+        "key": {
+            "path": "/tmp/runtimeguard-allow-target"
+        },
+        "value": 1
+    },{
+        "key": {
+            "path": "/tmp/runtimeguard-deny-target"
+        },
+        "value": 0
+    }
+]
+
+=== loader-internal counters (BPF_MAP_TYPE_ARRAY "counters"), dumped via SIGUSR1 after the batch ===
+counters[0=hook_entered]=630
+counters[1=deny_decisions]=10
+counters[2=allow_decisions_mapped]=10
+counters[3=allow_decisions_default]=610
+
+deny_decisions=10 and allow_decisions_mapped=10 match the 10+10 test repetitions
+exactly -- no spurious and no missing map-driven decisions. allow_decisions_default=610
+is unrelated system activity (this hook is system-wide, no cgroup scoping).

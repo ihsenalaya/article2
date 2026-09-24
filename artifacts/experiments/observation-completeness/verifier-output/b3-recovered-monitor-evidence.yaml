@@ -1,0 +1,45 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimePlacementEvidence
+metadata:
+  creationTimestamp: "2026-08-13T16:02:04Z"
+  generation: 1
+  name: b3-liveness-16355
+  namespace: aiops-system
+  resourceVersion: "46554"
+  uid: 01364a70-1eef-4610-a1e1-7e21935680e7
+spec:
+  nodeName: vm-a2-cpucampaign-20260813-worker
+  policyRef:
+    name: b3-liveness-16355
+    namespace: workloads
+  targetRef:
+    name: b3-liveness-16355
+    namespace: workloads
+status:
+  agentIntegrity:
+    digestVerified: true
+    imageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:5dbfb5895dc843fd24b9328a2e1b5516fc3a060d0e956e0324124bebc2b93024
+  behavior:
+    deviceAccessDenied: 25
+    execDenied: 25
+    fileOpenDenied: 400
+  cgroupID: "162753"
+  conformance: violation
+  decisionHash: 710cc659befb6323c0e7f54699b2f27ba8b1195f68b5f8296a6b48ab92918e05
+  decisionID: workloads/b3-liveness-16355
+  evidenceMode: simulated
+  evidenceSequence: 1
+  hookSetDigest: b3435473634b9c7a5885b94d45376e5e065fdb26cac3977f1def37d8ce09ea99
+  lastHeartbeat: "2026-08-13T16:03:41Z"
+  monitorEpoch: 30d0c6e8effc1eeafad899886fe057c4
+  monitorID: agent-vm-a2-cpucampaign-20260813-worker
+  podUID: a30096cf-ebd6-4866-bc20-68c2d2385c38
+  policyGeneration: 2
+  policyHash: 47971a5d4df2c8bf2d8201318f4bbc2ae299f5fbea8b17df0f5ba6a161cccedd
+  signature:
+    algorithm: ed25519
+    expiresAt: "2026-08-13T16:13:41Z"
+    issuedAt: "2026-08-13T16:03:41Z"
+    keyIdentifier: agent-vm-a2-cpucampaign-20260813-worker
+    payloadDigest: 719fa1e014cd0a2887dbdc4aa3726f702085ecc9e94a66e5e7e4d71fb2c2fed3
+    signature: 30353064b42fdd3d88fd82cbf8c86f76b42f5003608a638386c4903a161f12a1f73bdff013b27d708857bf6551747f3fad7d234a0861c054f88330146eedd800

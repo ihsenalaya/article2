@@ -1,0 +1,75 @@
+{
+  "schema_version": "task07-mediation-coverage/v1",
+  "scope": "kind-local source and policy translation coverage; real enforcement requires an enforce-capable BPF-LSM node",
+  "operations": [
+    {
+      "id": "exec",
+      "policy_fields": ["RuntimeSecurityPolicy.spec.exec.defaultAction", "RuntimeSecurityPolicy.spec.exec.allowedPaths", "RuntimeSecurityPolicy.spec.exec.deniedPaths"],
+      "audit_hooks": ["tracepoint/syscalls/sys_enter_execve"],
+      "enforce_hooks": ["lsm/bprm_check_security"],
+      "event_type": "EVENT_TYPE_EXEC",
+      "bpf_source": "ebpf-agent/bpf/agent.bpf.c",
+      "policy_test_file": "ebpf-agent/internal/policy/policy_test.go",
+      "policy_tests": ["TestBuildPlan_DefaultActionsTranslated", "TestBuildPlan_ExecRulesUseCorrectHashesAndOrder"],
+      "attack_case": "A1 exec disallowed binary",
+      "raw_result": "research/tasks/TASK-07/stdout/mediation-go-test.out",
+      "coverage_status": "covered_in_policy_translation_and_bpf_source; kind audit observable; real deny pending enforce-capable kernel"
+    },
+    {
+      "id": "file_access",
+      "policy_fields": ["RuntimeSecurityPolicy.spec.fileAccess.defaultAction", "RuntimeSecurityPolicy.spec.fileAccess.allowedPathPrefixes", "RuntimeSecurityPolicy.spec.fileAccess.deniedPathPrefixes"],
+      "audit_hooks": ["tracepoint/syscalls/sys_enter_open", "tracepoint/syscalls/sys_enter_openat"],
+      "enforce_hooks": ["lsm/file_open"],
+      "event_type": "EVENT_TYPE_FILE_OPEN",
+      "bpf_source": "ebpf-agent/bpf/agent.bpf.c",
+      "policy_test_file": "ebpf-agent/internal/policy/policy_test.go",
+      "policy_tests": ["TestBuildPlan_DefaultActionsTranslated", "TestBuildPlan_FileRulesCombineFileAndDevicePolicies"],
+      "attack_case": "A2 file open denied path",
+      "raw_result": "research/tasks/TASK-07/stdout/mediation-go-test.out",
+      "coverage_status": "covered_in_policy_translation_and_bpf_source; exact path hash only, CRD prefix wording is a known limitation"
+    },
+    {
+      "id": "network_connect",
+      "policy_fields": ["RuntimeSecurityPolicy.spec.networkEgress.defaultAction", "RuntimeSecurityPolicy.spec.networkEgress.allowedCIDRs", "RuntimeSecurityPolicy.spec.networkEgress.allowedPorts", "RuntimeSecurityPolicy.spec.networkEgress.deniedCIDRs"],
+      "audit_hooks": ["tracepoint/syscalls/sys_enter_connect"],
+      "enforce_hooks": ["lsm/socket_connect"],
+      "event_type": "EVENT_TYPE_CONNECT",
+      "bpf_source": "ebpf-agent/bpf/agent.bpf.c",
+      "policy_test_file": "ebpf-agent/internal/policy/policy_test.go",
+      "policy_tests": ["TestBuildPlan_DefaultActionsTranslated", "TestBuildPlan_NetCIDR_SingleHostNoPorts", "TestBuildPlan_NetCIDR_WithExplicitPorts", "TestBuildPlan_NetDeniedCIDRProducesDenyRule"],
+      "attack_case": "A3 network connect denied destination",
+      "raw_result": "research/tasks/TASK-07/stdout/mediation-go-test.out",
+      "coverage_status": "covered_for IPv4 /32 exact host and optional port matching; broader CIDRs and IPv6 are reported skipped"
+    },
+    {
+      "id": "device_access",
+      "policy_fields": ["RuntimeSecurityPolicy.spec.deviceAccess.defaultAction", "RuntimeSecurityPolicy.spec.deviceAccess.allowedDevicePaths", "RuntimeSecurityPolicy.spec.deviceAccess.requireConfidentialGPU", "RuntimeSecurityPolicy.spec.deviceAccess.vendor"],
+      "audit_hooks": ["tracepoint/syscalls/sys_enter_open", "tracepoint/syscalls/sys_enter_openat"],
+      "enforce_hooks": ["lsm/file_open"],
+      "event_type": "EVENT_TYPE_DEVICE_OPEN",
+      "bpf_source": "ebpf-agent/bpf/agent.bpf.c",
+      "policy_test_file": "ebpf-agent/internal/policy/policy_test.go",
+      "policy_tests": ["TestBuildPlan_DeviceRulesUseFileHookMap", "TestBuildPlan_FileRulesCombineFileAndDevicePolicies"],
+      "attack_case": "A4 unauthorized device open",
+      "raw_result": "research/tasks/TASK-07/stdout/mediation-go-test.out",
+      "coverage_status": "covered_as_device-path classification on file/open hooks; confidential GPU property itself is not proven in kind"
+    }
+  ],
+  "reported_gaps": [
+    {
+      "id": "file_prefix_semantics",
+      "claim_not_made": "prefix matching is not claimed as mediated",
+      "reason": "BPF map uses exact FNV path hashes; CRD field names retain prefix terminology from earlier design"
+    },
+    {
+      "id": "network_cidr_range_semantics",
+      "claim_not_made": "CIDR ranges broader than /32 and IPv6 are not claimed as mediated",
+      "reason": "policy translation reports skipped CIDRs instead of silently claiming coverage"
+    },
+    {
+      "id": "real_kind_denial",
+      "claim_not_made": "kind does not prove real denial",
+      "reason": "TASK-06 final evidence mode was simulated; BPF-LSM enforcement must be tested on an enforce-capable kernel"
+    }
+  ]
+}

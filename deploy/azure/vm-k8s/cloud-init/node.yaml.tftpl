@@ -1,0 +1,11 @@
+#cloud-config
+package_update: false
+package_upgrade: false
+write_files:
+  - path: /etc/article2-task13-node.env
+    owner: root:root
+    permissions: "0644"
+    content: |
+      ARTICLE2_TASK=TASK-13
+      ARTICLE2_ROLE=${role}
+      ARTICLE2_PROVISIONER=terraform

@@ -1,0 +1,117 @@
+{
+  "valid": true,
+  "freshness_seconds": 95,
+  "checks": [
+    {
+      "name": "signature-algorithm",
+      "passed": true,
+      "message": "algorithm=\"ed25519\""
+    },
+    {
+      "name": "monitor-id",
+      "passed": true,
+      "message": "monitorID=\"agent-vm-a2-cpucampaign-20260813-worker\" keyIdentifier=\"agent-vm-a2-cpucampaign-20260813-worker\""
+    },
+    {
+      "name": "signature",
+      "passed": true,
+      "message": "payload digest and Ed25519 signature verified"
+    },
+    {
+      "name": "freshness-issued",
+      "passed": true,
+      "message": "issuedAt=1786648973 now=1786649068"
+    },
+    {
+      "name": "freshness-expires",
+      "passed": true,
+      "message": "expiresAt=1786649573 now=1786649068"
+    },
+    {
+      "name": "freshness-max-age",
+      "passed": true,
+      "message": "age=95s max=900s"
+    },
+    {
+      "name": "freshness-sequence",
+      "passed": true,
+      "message": "sequence=1"
+    },
+    {
+      "name": "freshness-previous-digest",
+      "passed": true,
+      "message": "previous digest may be empty only for first evidence"
+    },
+    {
+      "name": "policy-ref",
+      "passed": true,
+      "message": "evidence=workloads/c3-stale-evidence-1344 policy=workloads/c3-stale-evidence-1344"
+    },
+    {
+      "name": "target-ref",
+      "passed": true,
+      "message": "evidence=workloads/c3-stale-evidence-1344 policy=workloads/c3-stale-evidence-1344"
+    },
+    {
+      "name": "decision-id",
+      "passed": true,
+      "message": "evidence=\"workloads/c3-stale-evidence-1344\" policy=\"workloads/c3-stale-evidence-1344\""
+    },
+    {
+      "name": "decision-hash",
+      "passed": true,
+      "message": "evidence=\"88a4dacf0dd4e26b9bf2d54b844a774698ba51c601f85681c0112926c83c7fc1\" policy=\"88a4dacf0dd4e26b9bf2d54b844a774698ba51c601f85681c0112926c83c7fc1\""
+    },
+    {
+      "name": "policy-hash",
+      "passed": true,
+      "message": "evidence=\"81d0678089690d4b00f210af2c5ce4cef4094370d62862e9645f016aa1cffe3f\" policy=\"81d0678089690d4b00f210af2c5ce4cef4094370d62862e9645f016aa1cffe3f\""
+    },
+    {
+      "name": "policy-generation",
+      "passed": true,
+      "message": "evidence=2 policy=2"
+    },
+    {
+      "name": "pod-uid",
+      "passed": true,
+      "message": "evidence=\"040f13f6-4deb-4b2e-92b0-7d772c5bb7c8\" policy=\"040f13f6-4deb-4b2e-92b0-7d772c5bb7c8\""
+    },
+    {
+      "name": "node-identity",
+      "passed": true,
+      "message": "evidence=\"vm-a2-cpucampaign-20260813-worker\" policy=\"vm-a2-cpucampaign-20260813-worker\""
+    },
+    {
+      "name": "agent-image-digest",
+      "passed": true,
+      "message": "evidence=\"acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5\" expected=\"acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5\" verified=true"
+    },
+    {
+      "name": "observation-completeness",
+      "passed": true,
+      "message": "conformance=\"conform\" eventsDroppedSinceLastEvidence=0 dropCount=0"
+    },
+    {
+      "name": "monitor-heartbeat-fresh",
+      "passed": true,
+      "message": "lastHeartbeat=1786648973 now=1786649068 ageSeconds=95 maxSeconds=900"
+    },
+    {
+      "name": "monitor-epoch-present",
+      "passed": true,
+      "message": "monitorEpoch=\"d0291e900b63acd09c94eff8c9ed6828\""
+    },
+    {
+      "name": "hook-set-digest-present",
+      "passed": true,
+      "message": "hookSetDigest=\"b3435473634b9c7a5885b94d45376e5e065fdb26cac3977f1def37d8ce09ea99\""
+    },
+    {
+      "name": "authorization-state-present",
+      "passed": true,
+      "message": "authorizationState=\"authorized\""
+    }
+  ],
+  "authorized_and_compliant": true
+}

@@ -1,0 +1,2 @@
+{"poll_interval": "0.5s", "rep": 1, "t_rev_unix": 1786645834, "authorization_state": "revoked", "git_commit": "5685af54f9f70273dccf601d472579074f21692c", "outcome": "no_fresh_revoked_evidence_tick_in_window"}
+{"poll_interval": "0.5s", "rep": 2, "t_rev_unix": 1786645945, "authorization_state": "revoked", "git_commit": "5685af54f9f70273dccf601d472579074f21692c", "outcome": "no_fresh_revoked_evidence_tick_in_window"}

@@ -1,0 +1,125 @@
+# Phase 9-bis evaluation workload for the single-node k3s cluster on the
+# confidential GPU VM (Azure/az-cgpu-onboarding VMI). Unlike kind and the
+# AKS attempt, this VMI ships a working, pre-validated NVIDIA driver, so
+# /dev/nvidia0 here is expected to be a REAL functioning device -- the
+# device-access attack scenario (A4 from Phase 5) can finally be validated
+# against real hardware instead of a simulated (non-existent) path. Confirm
+# this with `ls -la /dev/nvidia*` after deploying before treating any
+# device-access result as "real device" in the writeup -- don't assume it.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workloads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allowed-svc
+  namespace: workloads
+spec:
+  selector:
+    app: allowed-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allowed-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: allowed-endpoint }
+  template:
+    metadata:
+      labels: { app: allowed-endpoint }
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forbidden-svc
+  namespace: workloads
+spec:
+  selector:
+    app: forbidden-endpoint
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forbidden-endpoint
+  namespace: workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: forbidden-endpoint }
+  template:
+    metadata:
+      labels: { app: forbidden-endpoint }
+    spec:
+      imagePullSecrets:
+        - name: acr-pull-secret
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports: [{ containerPort: 80 }]
+---
+# Workload 3: GPU-profile workload -- real placement on real confidential
+# H100 hardware, with (expected) real, functioning /dev/nvidia0.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-workload
+  namespace: workloads
+  labels: { workload: gpu-workload }
+spec:
+  imagePullSecrets:
+    - name: acr-pull-secret
+  initContainers:
+    - name: fetch-model
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          apk add --no-cache wget >/dev/null 2>&1
+          wget -q -O /models/model.safetensors \
+            https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors
+      volumeMounts:
+        - name: models
+          mountPath: /models
+  containers:
+    - name: main
+      image: alpine:3.20
+      command: ["sh", "-c"]
+      args:
+        - |
+          while true; do
+            cat /models/model.safetensors > /dev/null 2>&1
+            cat /dev/nvidia0 > /dev/null 2>&1
+            wget -T 2 -q -O /dev/null http://allowed-svc.workloads.svc.cluster.local/ || true
+            sleep 15
+          done
+      volumeMounts:
+        - name: models
+          mountPath: /models
+          readOnly: true
+        - name: nvidia0
+          mountPath: /dev/nvidia0
+  volumes:
+    - name: models
+      emptyDir: {}
+    - name: nvidia0
+      hostPath:
+        path: /dev/nvidia0
+        type: CharDevice

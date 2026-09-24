@@ -1,0 +1,70 @@
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-13T19:19:02Z"
+  generation: 1
+  name: c3-stale-evidence
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: c3-stale-evidence
+    uid: a01d758a-3412-4603-8758-d3cca6b55451
+  resourceVersion: "71908"
+  uid: 3a774ee9-b6a9-489b-8826-95300f609558
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5
+  binding: {}
+  bpfLock: {}
+  derivation: {}
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: audit
+  exec:
+    defaultAction: deny
+  fileAccess:
+    defaultAction: deny
+  networkEgress:
+    defaultAction: deny
+  placementDecisionRef:
+    name: c3-stale-evidence
+    namespace: workloads
+  targetRef:
+    name: c3-stale-evidence
+    namespace: workloads
+status:
+  appliedCgroupIDs:
+  - "173383"
+  - "173304"
+  appliedNodeName: vm-a2-cpucampaign-20260813-worker
+  appliedPolicyGeneration: 1
+  conditions:
+  - lastTransitionTime: "2026-08-13T19:19:02Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-13T19:19:02Z"
+    message: 'decision replay detected: decision_id=workloads/c3-stale-evidence epoch/version=1/1
+      nonce=1786648741106803583 already recorded for workloads/c3-stale-evidence'
+    reason: ReplayDetected
+    status: "False"
+    type: Verified
+  - lastTransitionTime: "2026-08-13T19:19:03Z"
+    message: policy generation 1 applied to 2 cgroup(s) on node vm-a2-cpucampaign-20260813-worker
+    observedGeneration: 1
+    reason: PolicyApplied
+    status: "True"
+    type: EnforcementReady
+  decision: rejected
+  enforcementReadyAt: "2026-08-13T19:19:03Z"
+  enforcementReadyMonotonicNs: 25269006614556
+  evidenceMode: simulated
+  observedGeneration: 1
+  rejectionReason: 'decision replay detected: decision_id=workloads/c3-stale-evidence
+    epoch/version=1/1 nonce=1786648741106803583 already recorded for workloads/c3-stale-evidence'
+  verificationStatus: Failed

@@ -1,0 +1,11 @@
+date_code   = "20260801"
+owner       = "ihsen-alaya"
+alert_email = "you@example.com"
+
+# Leave false until Phase 9's real measurement window (see EXPERIMENTS_LOG.md
+# Phase 8 checkpoint) -- rule 5: GPU resources exist only during active
+# measurement campaigns.
+enable_gpu_pool = false
+gpu_node_count  = 1
+
+budget_amount_usd = 200

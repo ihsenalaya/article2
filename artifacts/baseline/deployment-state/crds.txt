@@ -1,0 +1,22 @@
+NAME                                                  CREATED AT
+aiplacementdecisions.aiops.imperium.io                2026-08-13T12:37:53Z
+bgpconfigurations.crd.projectcalico.org               2026-08-13T12:21:29Z
+bgpfilters.crd.projectcalico.org                      2026-08-13T12:21:29Z
+bgppeers.crd.projectcalico.org                        2026-08-13T12:21:29Z
+blockaffinities.crd.projectcalico.org                 2026-08-13T12:21:29Z
+caliconodestatuses.crd.projectcalico.org              2026-08-13T12:21:29Z
+clusterinformations.crd.projectcalico.org             2026-08-13T12:21:29Z
+felixconfigurations.crd.projectcalico.org             2026-08-13T12:21:29Z
+globalnetworkpolicies.crd.projectcalico.org           2026-08-13T12:21:29Z
+globalnetworksets.crd.projectcalico.org               2026-08-13T12:21:29Z
+hostendpoints.crd.projectcalico.org                   2026-08-13T12:21:29Z
+ipamblocks.crd.projectcalico.org                      2026-08-13T12:21:30Z
+ipamconfigs.crd.projectcalico.org                     2026-08-13T12:21:30Z
+ipamhandles.crd.projectcalico.org                     2026-08-13T12:21:30Z
+ippools.crd.projectcalico.org                         2026-08-13T12:21:30Z
+ipreservations.crd.projectcalico.org                  2026-08-13T12:21:30Z
+kubecontrollersconfigurations.crd.projectcalico.org   2026-08-13T12:21:30Z
+networkpolicies.crd.projectcalico.org                 2026-08-13T12:21:30Z
+networksets.crd.projectcalico.org                     2026-08-13T12:21:30Z
+runtimeplacementevidences.aiops.imperium.io           2026-08-13T12:37:52Z
+runtimesecuritypolicies.aiops.imperium.io             2026-08-13T12:37:51Z

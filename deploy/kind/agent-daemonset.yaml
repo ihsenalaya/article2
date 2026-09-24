@@ -1,0 +1,116 @@
+# Runtime Guard node eBPF agent — DaemonSet manifest for local kind testing.
+#
+# Image digest: the "image:" field below uses a mutable dev tag
+# (runtime-guard-ebpf-agent:dev) for local kind iteration, which the
+# Operator's --agent-image-digest flag cannot accept (it requires a real
+# repo@sha256:... digest, by design — see DESIGN.md's Janus-inspired agent
+# integrity requirement). Before wiring the Operator against this DaemonSet,
+# resolve the actual loaded image's digest (`docker inspect
+# --format='{{index .RepoDigests 0}}' runtime-guard-ebpf-agent:dev` after a
+# `kind load docker-image`, or `crictl inspecti` from inside a node) and pass
+# that to the Operator, not this mutable tag. See EXPERIMENTS_LOG.md Phase 4/5.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: runtime-guard-agent-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: runtime-guard-agent
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimesecuritypolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["aiops.imperium.io"]
+    resources: ["runtimeplacementevidences/status"]
+    verbs: ["get", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: runtime-guard-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: runtime-guard-agent
+subjects:
+  - kind: ServiceAccount
+    name: runtime-guard-agent
+    namespace: runtime-guard-agent-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: runtime-guard-agent
+  namespace: runtime-guard-agent-system
+  labels:
+    app: runtime-guard-agent
+spec:
+  selector:
+    matchLabels:
+      app: runtime-guard-agent
+  template:
+    metadata:
+      labels:
+        app: runtime-guard-agent
+    spec:
+      serviceAccountName: runtime-guard-agent
+      hostPID: true
+      containers:
+        - name: agent
+          image: runtime-guard-ebpf-agent:dev
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            # Broad privilege is a deliberate, temporary simplification for
+            # Phase 4/5 kind validation, not a hardening decision — attaching
+            # tracepoints/LSM programs and reading ring buffers needs
+            # CAP_BPF, CAP_SYS_ADMIN (or CAP_PERFMON depending on kernel
+            # version) and more; tuning this down to the exact minimal
+            # capability set is a documented follow-up (see
+            # EXPERIMENTS_LOG.md / RESULTS.md limitations), not attempted
+            # here given the time available for this phase.
+            privileged: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CGROUP_ROOT
+              value: /host/sys/fs/cgroup
+            - name: LSM_PATH
+              value: /host/sys/kernel/security/lsm
+            - name: BPF_LOCK_ENABLED
+              value: "false" # audit-first: see Phase 4 requirement to start strictly audit-only
+            - name: AGENT_IMAGE_DIGEST
+              value: "runtime-guard-ebpf-agent:dev@sha256:8aef18b4880a1944e008273d59d8876941ec6ce7feaf772d56856538676725c4" # kind-local digest, see file header comment
+            - name: AGENT_SIGNING_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: runtime-guard-agent-signing-key
+                  key: privateKeyHex
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host/sys
+              readOnly: true
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+      tolerations:
+        - operator: Exists # run on every node, including any tainted control-plane in kind

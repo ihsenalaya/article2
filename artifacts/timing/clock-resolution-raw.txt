@@ -1,0 +1,12 @@
+=== worker (vm-a2-cpucampaign-20260813-worker, 20.97.165.236) ===
+clock_getres(CLOCK_MONOTONIC_RAW) nominal resolution seconds: 1e-09
+empirical min observed nonzero delta ns: 180
+empirical p50 delta ns: 203
+count nonzero deltas out of 200000 back-to-back clock_gettime_ns() calls: 200000
+
+clock_getres CLOCK_MONOTONIC_RAW: 1e-09  CLOCK_MONOTONIC: 1e-09
+single-sample offset (mono - raw) ns at t0: 600468982  at t1: 600468484  drift-of-offset ns: -498
+
+=== control-plane (vm-a2-cpucampaign-20260813-cp, 20.242.25.44) ===
+clock_getres CLOCK_MONOTONIC_RAW: 1e-09  CLOCK_MONOTONIC: 1e-09
+single-sample offset (mono - raw) ns at t0: 736440676  at t1: 736440336  drift-of-offset ns: -340

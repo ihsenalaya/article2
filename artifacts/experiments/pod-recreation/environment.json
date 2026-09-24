@@ -1,0 +1,24 @@
+{
+  "task": "TASK-07",
+  "experiment": "D — Kubernetes identity regression",
+  "git_commit": "53dfe31",
+  "git_commit_note": "53dfe31 (Task 06) was HEAD for this experiment -- Task 07 made no source code changes, only added this experiment directory. The mechanism under test (pod-UID mismatch refusal in ebpf-agent/cmd/agent/main.go reconcileOnce, both the initial apply path and the already-revoked cleanup path) was fixed in commit 487a57e, well before this campaign began; Task 07 is a regression/anti-pattern validation of that existing fix, not new instrumentation.",
+  "cluster": "cpu-campaign-20260813",
+  "resource_group": "rg-a2-cpucampaign-20260813",
+  "kubernetes_version": "v1.30.14",
+  "kernel_version": "6.8.0-1064-azure",
+  "images": {
+    "operator": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813-task06@sha256:8279d50cf675bcf95f909796dec8f93b3ee3538bd8331dea34537d246b450afb",
+    "ebpf_agent": "acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent:cpu-campaign-20260813-task06@sha256:cf7d38721c4d6e1e417841c770c69f4f1f3e55d60ff30810fb503e8d1a835bf5"
+  },
+  "note_on_images": "Unchanged from Task 06 -- Task 07 requires no new code, so no rebuild was needed.",
+  "enforcement_mode": "audit (bpf not in active LSM list on either node -- see artifacts/azure/environment.md; Task 10 addresses real BPF-LSM enforcement separately)",
+  "nodes": ["vm-a2-cpucampaign-20260813-cp", "vm-a2-cpucampaign-20260813-worker"],
+  "poll_interval_seconds": 5,
+  "mechanism_under_test": {
+    "file": "ebpf-agent/cmd/agent/main.go",
+    "check": "p.Spec.Binding.PodUID != \"\" && string(pod.UID) != p.Spec.Binding.PodUID",
+    "fix_commit": "487a57e (2026-08-10, H100-E04/E09 finding: a pod recreated at the same Name+Namespace after deletion would silently inherit the previous pod's policy binding without this check)",
+    "applies_to": "both the initial-apply path (reconcileOnce's main seen-loop) and the already-revoked cleanup path (comparing by pod UID, not just Name+Namespace, before untracking)"
+  }
+}

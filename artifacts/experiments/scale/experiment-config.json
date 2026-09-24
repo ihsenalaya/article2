@@ -1,0 +1,45 @@
+{
+  "E1_steady_state": {
+    "description": "N in {1, 10, 50, 100} concurrent AIPlacementDecision submissions via the in-cluster client-go load generator (operator/cmd/scale-generator), n=3 reps per tier. Collects controller CPU, controller memory, agent CPU, agent memory, convergence time (submit->EnforcementReady), and per-decision outcome (converged/timed_out/failed).",
+    "n_tiers": [1, 10, 50, 100],
+    "reps_per_tier": 3,
+    "reps_note": "Experiment protocol prefers n=5. n=3 is a documented, honest scope decision under real time constraints on a single live billed cluster running many experiments serially -- consistent with prior experiments in this campaign (see revocation/experiment-config.json).",
+    "converge_timeouts": {"1": "60s", "10": "90s", "50": "180s", "100": "300s"},
+    "scripts": ["scripts/run-e1.sh"],
+    "known_finding": "N=100 rep=1 converged 85/100 (15 'pod never scheduled', cluster-side-evidenced by kubectl FailedScheduling events as 'Too many pods' -- a transient cross-rep pod-count race, not a RuntimeGuard defect). See exclusions.md and summary.md."
+  },
+  "E2_submission_concurrency": {
+    "description": "Fixed N=50 decisions, submitted at three numerically-defined concurrency levels (1, 10, 25 concurrent in-flight submissions), n=3 reps per level. Reports p50/p95/p99 of submit->accepted, submit->policy-created, submit->PolicyReady, computed over the POOLED per-decision records across all reps of a level (150 decisions per level), not per-run means -- per protocol's 'distributions' requirement.",
+    "n_fixed": 50,
+    "concurrency_levels": [1, 10, 25],
+    "reps_per_level": 3,
+    "converge_timeout": "180s",
+    "scripts": ["scripts/run-e2.sh"]
+  },
+  "E3_500_policy_case": {
+    "description": "Literal N=500 attempted (not substituted with a smaller N), concurrency=50 (bounded, per E2's own throttling-avoidance finding), n=3 reps. Every rep additionally captures cluster-side RCA evidence (FailedScheduling event counts filtered to this run's pods, pod-phase counts, node allocatable.pods) BEFORE cleanup, per the protocol's 'do not blame client path without evidence' requirement.",
+    "n": 500,
+    "concurrency": 50,
+    "reps": 3,
+    "converge_timeout": "300s",
+    "scripts": ["scripts/run-e3.sh"],
+    "finding": "500/500 does NOT converge on this cluster. All 3 reps: exactly 399/500 decisions 'failed: pod never scheduled', 101/500 scheduled -- consistent with the single worker node's 110-pod allocatable ceiling (~101-102 after ~8-9 system pods). Direct cluster evidence: kubectl events show 399 FailedScheduling events per rep with reason 'Too many pods' (control-plane node separately excluded by its NoSchedule taint). rep=1's 101 scheduled decisions fully converged (Ready) within 300s; rep=2 and rep=3's 101 scheduled decisions did NOT converge within 300s despite being scheduled (outcome=timed_out) -- see summary.md limitations for the partial, evidence-based (not fabricated) discussion of this secondary effect."
+  },
+  "E4_event_integrity_under_scale": {
+    "description": "Mandatory per experiment protocol. N=100, concurrency=100, n=3 reps -- same load as E1's largest reliably-converging tier. After convergence, pods/policies are deliberately left alive for 40s (>1 evidence-emission tick, 30s interval) before querying every RuntimePlacementEvidence object the run produced (in the agent's evidence namespace, aiops-system -- NOT the workload namespace, a real bug in this script's first attempt, see exclusions.md), then cleaning up.",
+    "n": 100,
+    "concurrency": 100,
+    "reps": 3,
+    "converge_timeout": "300s",
+    "post_converge_wait_seconds": 40,
+    "scripts": ["scripts/run-e4.sh"],
+    "measurement_mapping": "kernel drop count -> Status.DropCount (cumulative) / Status.EventsDroppedSinceLastEvidence (delta); user-space received count and evidence incorporated count -> both equal sum(Status.Behavior.*) across the run's evidence objects (same measured quantity in this implementation -- accumulator.handle() in ebpf-agent/cmd/agent/main.go increments Behavior counters directly off the ring-buffer read, no separate received-but-uningested stage); event generation rate -> not independently instrumented, established indirectly via the Generated==Emitted+Dropped invariant (loader.go doc comment) combined with the measured DropCount.",
+    "finding": "100/100 evidence coverage, DropCount==0 and EventsDroppedSinceLastEvidence==0 for every evidence object, across all 3 reps -- event integrity held under N=100 concurrent load by this measurement. Secondary, unexplained observation: ExecAllowed==0 in all 3 reps despite every workload pod exec'ing sleep at container start; FileOpenDenied dominates the incorporated-event counts (16/203/112 across reps) with high rep-to-rep variance. Reported as an open observation, not root-caused -- see summary.md limitations."
+  },
+  "sample_size_discipline": "n = number of independent scale-job runs (each an independent Job/generator-process invocation against a freshly cleaned-up cluster state), never assertions x runs. E2's percentiles are pooled across n reps' worth of per-decision records (explicitly n_reps x N decisions), stated as such, not presented as if each decision were an independent repetition of the experimental condition.",
+  "infrastructure_incidents_during_this_task": [
+    "Client-side throttling + combined stdout/stderr log stream corrupting single-line JSON capture at N>=50 (fixed: raised generator QPS/Burst, capture now takes the last valid-JSON line rather than the whole stream).",
+    "run_scale_job job-failure diagnostic path had a redirect-order bug (2>&1 >&2) that leaked raw job logs into the same captured stdout stream as the FAILED marker, corrupting caller scripts' out_path and crashing their Python analysis step on the first genuine Job failure encountered (fixed: diagnostic logs now go to a dedicated file; callers additionally verify out_path is a real, existing file).",
+    "Both cluster VMs were deallocated mid-campaign by a pre-existing daily auto-shutdown schedule (disabled after discovery); restart surfaced an expired short-lived ACR pull-secret token (fixed by switching to ACR admin-user static credentials)."
+  ]
+}

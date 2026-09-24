@@ -1,0 +1,5 @@
+NAME                                                        READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                                                          SELECTOR
+deployment.apps/runtime-guard-operator-controller-manager   1/1     1            1           4m25s   manager      acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-operator:cpu-campaign-20260813   control-plane=controller-manager
+
+NAME                                                             READY   STATUS    RESTARTS   AGE   IP              NODE                                NOMINATED NODE   READINESS GATES
+pod/runtime-guard-operator-controller-manager-5f56974687-4r8b9   1/1     Running   0          74s   192.168.87.67   vm-a2-cpucampaign-20260813-worker   <none>           <none>

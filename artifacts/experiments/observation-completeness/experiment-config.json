@@ -1,0 +1,38 @@
+{
+  "B1_event_loss": {
+    "description": "Controlled-rate file-open generation (rate-gen) against a policy-bound pod, comparing the generator's own attempted count against RuntimePlacementEvidence.Behavior counters and the node-wide DropCount.",
+    "rates_per_sec": [100, 1000, 5000, 10000],
+    "duration_seconds_per_rate": 10,
+    "runs_per_rate": 1,
+    "runs_per_rate_note": "Protocol's example progression (100/1k/5k/10k events/s) does not specify a repetition count for B1; n=1 run per rate is a documented, honest scope decision under real time constraints (this campaign is running many experiments serially against one live billed cluster), not concealed as a larger n. The rate sweep itself, not repetition count, is the primary independent variable being characterized.",
+    "script": "scripts/run-b1.sh",
+    "methodology_note": "Two harness bugs were found and fixed before this data is trustworthy -- see exclusions.md for the full account and discarded-runs/ for the invalidated attempts. (1) A capture race: without a linger period after the tool exits, the agent's revoke+forgetAll cycle could wipe per-cgroup counters before the next evidence tick captured them, producing spurious 100% loss. (2) A closure-gap confound: the generator started running at container start, racing ahead of the harness's own decision-minting + EnforcementReady wait, so measured loss partly reflected Task 04's admission-to-release gap, not eBPF observation capacity. Fixed via GATE_START (generation waits for a start signal touched only after EnforcementReady is confirmed) and a fixed post-generation wait spanning at least one full evidence tick before a single read (not \"poll until first non-empty\", which can catch a partial mid-tick snapshot)."
+  },
+  "B2_alternate_path_coverage": {
+    "description": "For each (probed syscall, target) pair, invoke a raw-syscall probe inside a policy-bound pod and compare RuntimePlacementEvidence.Behavior deltas against a wrapper-only baseline (an unrecognized probe mode that performs zero file/exec syscalls before exiting).",
+    "cases": [
+      {"case": "control-openat", "probe_mode": "openat", "target": "/etc/hostname", "hooked": true},
+      {"case": "control-execve", "probe_mode": "execve", "target": "/bin/true", "hooked": true},
+      {"case": "altpath-openat2", "probe_mode": "openat2", "target": "/etc/hostname", "hooked": false},
+      {"case": "altpath-execveat", "probe_mode": "execveat", "target": "/bin/true", "hooked": false}
+    ],
+    "runs_per_case": 1,
+    "script": "scripts/run-b2.sh",
+    "methodology_note": "Raw (non-delta) counters were found to include real, non-negligible wrapper overhead (the GATE_START wait loop and the shell's own fork+exec of the probe binary), confirmed by execDenied=2 appearing even for the openat2 case, which makes zero exec calls. A one-time wrapper-only baseline run (probe mode set to an unrecognized string, which altpath-probe's default case handles by exiting without any file/exec syscall) is subtracted from each case's counters; only the delta is attributed to the probed syscall. The altpath-execveat implementation additionally performs one precursor open() (needed for its dirfd+AT_EMPTY_PATH calling convention), so its fileOpenDenied delta is not itself evidence execveat was observed -- only execDenied is; a more direct execveat(AT_FDCWD, pathname, ...) invocation without a precursor open was not tested, and would very likely be an even more complete bypass."
+  },
+  "B3_monitor_liveness": {
+    "description": "Creates a policy-bound long-running workload, captures a baseline evidence lastHeartbeat, kills the node's agent pod, and verifies (a) while genuinely dead, verify-evidence's monitor-heartbeat-fresh check correctly flags stale evidence, and (b) once recovered, it correctly does not.",
+    "max_age_seconds": 45,
+    "max_age_note": "Set to 1.5x the 30s production evidence-tick interval. Two prior attempts used shorter or unmargined values and produced misleading results documented in exclusions.md: a max-age of 20s (less than one tick interval) flagged a genuinely healthy, freshly-ticked monitor as stale purely from normal tick-phase timing (a live monitor's heartbeat naturally ranges 0-30s old between ticks).",
+    "recreation_block_mechanism": "Temporary nodeSelector patch on the DaemonSet (a key no node satisfies), reverted via JSON-patch remove after the dead-monitor check. Node taints do NOT work here: the DaemonSet's pod template tolerates all taints ({\"operator\":\"Exists\"}).",
+    "dead_wait_seconds": 60,
+    "recovery_wait_seconds": 40,
+    "runs": 1,
+    "script": "scripts/run-b3.sh"
+  },
+  "B4_formal_synthesis": {
+    "description": "Not a script -- a synthesis of B1/B2/B3 findings against the required security property CompleteObs_Omega(I) <=> Coverage_Omega(I) AND NoLoss(I) AND MonitorLive(I), documented in summary.md.",
+    "source": "summary.md"
+  },
+  "sample_size_discipline": "n = number of independent pod/run lifecycles, never assertions x runs."
+}

@@ -1,0 +1,483 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: runtimeplacementevidences.aiops.imperium.io
+spec:
+  group: aiops.imperium.io
+  names:
+    kind: RuntimePlacementEvidence
+    listKind: RuntimePlacementEvidenceList
+    plural: runtimeplacementevidences
+    shortNames:
+    - rpe
+    singular: runtimeplacementevidence
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conformance
+      name: Conformance
+      type: string
+    - jsonPath: .status.evidenceMode
+      name: EvidenceMode
+      type: string
+    - jsonPath: .spec.nodeName
+      name: Node
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: RuntimePlacementEvidence is the Schema for the runtimeplacementevidences
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              RuntimePlacementEvidenceSpec defines the desired state of RuntimePlacementEvidence.
+              Desired state here is minimal: which policy/pod/node this recurring evidence
+              object attests to. The interesting content is in Status, produced by the node agent.
+            properties:
+              nodeName:
+                description: NodeName is the node the agent producing this evidence
+                  runs on.
+                type: string
+              policyRef:
+                description: PolicyRef references the RuntimeSecurityPolicy this evidence
+                  attests conformance to.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace of the referenced object. Defaults to the
+                      owner namespace.
+                    type: string
+                required:
+                - name
+                type: object
+              targetRef:
+                description: TargetRef identifies the workload or pod this evidence
+                  describes.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace of the referenced object. Defaults to the
+                      owner namespace.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - nodeName
+            - policyRef
+            - targetRef
+            type: object
+          status:
+            description: RuntimePlacementEvidenceStatus defines the observed state
+              of RuntimePlacementEvidence.
+            properties:
+              agentIntegrity:
+                description: AgentIntegrity carries the Janus-inspired agent self-integrity
+                  evidence.
+                properties:
+                  digestVerified:
+                    description: |-
+                      DigestVerified is true when the Operator confirmed ImageDigest matches
+                      the RuntimeSecurityPolicy's AgentIntegrity.ExpectedImageDigest.
+                    type: boolean
+                  imageDigest:
+                    description: |-
+                      ImageDigest is the digest of the agent image actually running
+                      (repo@sha256:<64 hex chars>) on the node hosting this pod.
+                    pattern: ^.+@sha256:[a-f0-9]{64}$
+                    type: string
+                  rtmrExtended:
+                    description: |-
+                      RTMRExtended is true when the agent's measurement was successfully
+                      extended into a platform runtime measurement register (e.g. TDX RTMR).
+                      False (with RTMRIndex unset) documents the limitation when the platform
+                      does not expose one, rather than silently assuming integrity.
+                    type: boolean
+                  rtmrIndex:
+                    description: RTMRIndex identifies which register was extended,
+                      when RTMRExtended is true.
+                    format: int32
+                    type: integer
+                required:
+                - digestVerified
+                - imageDigest
+                type: object
+              authorizationState:
+                description: |-
+                  AuthorizationState is the agent's own most recent, locally-observed
+                  belief about whether the AIPlacementDecision/RuntimeSecurityPolicy
+                  authorizing this pod is still present (authorized) or has disappeared
+                  (revoked). Task 06/C4: this is deliberately separate from Conformance
+                  -- Conformance answers "did observed behavior match policy P",
+                  AuthorizationState answers "is the underlying decision D still
+                  currently valid" -- a workload can be simultaneously conform (no
+                  policy violations) and revoked (idle post-revocation, or still
+                  running against a now-orphaned deny-by-default cgroup), and a
+                  verifier must not conflate the two. Part of the signed payload.
+                enum:
+                - authorized
+                - revoked
+                - unknown
+                type: string
+              behavior:
+                description: Behavior accumulates hook observation counters since
+                  the last emission.
+                properties:
+                  connectAllowed:
+                    description: ConnectAllowed counts connect() calls permitted by
+                      policy.
+                    format: int64
+                    type: integer
+                  connectDenied:
+                    description: |-
+                      ConnectDenied counts connect() calls denied by policy (or that would
+                      have been denied, in audit mode).
+                    format: int64
+                    type: integer
+                  deviceAccessAllowed:
+                    description: DeviceAccessAllowed counts device-open calls permitted
+                      by policy.
+                    format: int64
+                    type: integer
+                  deviceAccessDenied:
+                    description: |-
+                      DeviceAccessDenied counts device-open calls denied by policy (or that
+                      would have been denied, in audit mode).
+                    format: int64
+                    type: integer
+                  execAllowed:
+                    description: ExecAllowed counts execve calls permitted by policy.
+                    format: int64
+                    type: integer
+                  execDenied:
+                    description: |-
+                      ExecDenied counts execve calls denied by policy (or that would have been
+                      denied, in audit mode).
+                    format: int64
+                    type: integer
+                  fileOpenAllowed:
+                    description: FileOpenAllowed counts file_open calls permitted
+                      by policy.
+                    format: int64
+                    type: integer
+                  fileOpenDenied:
+                    description: |-
+                      FileOpenDenied counts file_open calls denied by policy (or that would
+                      have been denied, in audit mode).
+                    format: int64
+                    type: integer
+                type: object
+              bpfLockActive:
+                description: |-
+                  BPFLockActive is true when the defense-in-depth BPF-lock hook is
+                  currently blocking unauthorized BPF program loads on this node.
+                type: boolean
+              cgroupID:
+                description: |-
+                  CgroupID is the cgroup v2 ID the agent resolved for this pod, encoded as
+                  a decimal string (cgroup IDs are uint64 and may exceed safe JSON/YAML
+                  integer precision).
+                pattern: ^[0-9]+$
+                type: string
+              conditions:
+                description: Conditions captures evidence production/verification
+                  state.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              conformance:
+                description: |-
+                  Conformance is the P5 (Runtime Conformance) verdict: whether observed
+                  runtime behavior remained within the bounds of the referenced policy.
+                  "incomplete" means observation itself cannot be trusted for this
+                  evidence (events were dropped node-wide since the last emission, or
+                  the monitor's own liveness could not be confirmed -- see
+                  EventsDroppedSinceLastEvidence/LastHeartbeat) and MUST NOT be
+                  silently reported as "conform" (Task 05/B1, Q3).
+                enum:
+                - conform
+                - violation
+                - unknown
+                - incomplete
+                type: string
+              decisionHash:
+                description: |-
+                  DecisionHash is the SHA-256 canonical digest of the signed placement
+                  decision payload D used to derive the referenced policy.
+                pattern: ^[a-f0-9]{64}$
+                type: string
+              decisionID:
+                description: |-
+                  DecisionID is the immutable signed placement decision identity copied
+                  from the RuntimeSecurityPolicy binding, tying this evidence back to D.
+                type: string
+              dropCount:
+                description: |-
+                  DropCount is the cumulative count of eBPF ring-buffer submissions that
+                  failed (buffer full) on this node since the agent process started, as
+                  of this evidence emission. Node-wide, not per-pod: a dropped event's
+                  cgroup is unknowable by construction (see agent.bpf.c emit_event).
+                format: int64
+                type: integer
+              eventsDroppedSinceLastEvidence:
+                description: |-
+                  EventsDroppedSinceLastEvidence is the delta of DropCount since this
+                  policy's previous evidence emission. Nonzero forces Conformance to
+                  "incomplete" for this emission (see Conformance's doc comment).
+                format: int64
+                type: integer
+              evidenceMode:
+                description: |-
+                  EvidenceMode reflects whether this evidence was produced under real
+                  BPF-LSM enforcement, a simulated/audit-only fallback (e.g. this kernel's
+                  BPF-LSM is compiled but not active), or is unverified.
+                enum:
+                - real
+                - simulated
+                - unverified
+                type: string
+              evidenceSequence:
+                description: |-
+                  EvidenceSequence is a per-policy monotonic emission counter maintained by
+                  the node agent; gaps reveal missing evidence objects in the digest chain.
+                format: int64
+                minimum: 1
+                type: integer
+              hookSetDigest:
+                description: |-
+                  HookSetDigest is a deterministic hash of which eBPF hooks are
+                  currently attached (depends on the node's enforcement mode). A change
+                  between two evidence objects for the same MonitorEpoch reveals a hook
+                  detachment/reattachment a verifier can check.
+                type: string
+              lastAuthorizationSync:
+                description: |-
+                  LastAuthorizationSync is updated every agent poll cycle (default 5s,
+                  see --poll-interval) in which this pod's policy was confirmed still
+                  present/live, and stops advancing the moment revocation is detected
+                  (frozen at the last confirmed-authorized poll). Task 06/C5: this
+                  bounds how stale an "authorized"/"conform" claim can be -- the agent
+                  itself cannot know a revocation happened more recently than its own
+                  last successful poll, so a verifier comparing (now -
+                  LastAuthorizationSync) against its own tolerance gets an honest,
+                  measured upper bound on staleness rather than an unconditional trust
+                  assumption. Part of the signed payload.
+                format: date-time
+                type: string
+              lastHeartbeat:
+                description: |-
+                  LastHeartbeat is updated every evidence-emission cycle regardless of
+                  whether this pod produced any new events, so a verifier can
+                  distinguish "workload is quiet" (LastHeartbeat keeps advancing,
+                  Behavior counters don't) from "monitor is dead/blind" (LastHeartbeat
+                  stops advancing entirely).
+                format: date-time
+                type: string
+              lastViolation:
+                description: LastViolation records the most recent policy violation,
+                  if any.
+                properties:
+                  detail:
+                    description: Detail is a short human-readable description (e.g.
+                      the denied path or destination).
+                    type: string
+                  hook:
+                    description: Hook identifies which hook produced the violation.
+                    enum:
+                    - execve
+                    - file_open
+                    - connect
+                    - device_open
+                    type: string
+                  observedAt:
+                    description: ObservedAt is when the violation was observed by
+                      the agent.
+                    format: date-time
+                    type: string
+                required:
+                - hook
+                - observedAt
+                type: object
+              monitorEpoch:
+                description: |-
+                  MonitorEpoch identifies the emitting agent process's lifetime (set
+                  once, at agent startup). A change between two evidence objects for
+                  the same pod reveals an agent restart -- a monitor-liveness signal a
+                  verifier can check (Task 05/B3, Q5).
+                type: string
+              monitorID:
+                description: |-
+                  MonitorID identifies the monitor/agent key that signed this evidence.
+                  It must match Signature.KeyIdentifier for independent verification.
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the last generation observed by
+                  the node agent.
+                format: int64
+                type: integer
+              podUID:
+                description: |-
+                  PodUID is the pod UID this evidence was actually collected against,
+                  resolved via the Pod UID -> cgroup ID mapping.
+                type: string
+              policyGeneration:
+                description: |-
+                  PolicyGeneration is the RuntimeSecurityPolicy generation applied by the
+                  monitor when this evidence was emitted.
+                format: int64
+                type: integer
+              policyHash:
+                description: |-
+                  PolicyHash is the SHA-256 canonical digest of the derived runtime policy
+                  P that this evidence attests.
+                pattern: ^[a-f0-9]{64}$
+                type: string
+              previousEvidenceDigest:
+                description: |-
+                  PreviousEvidenceDigest links this evidence to the prior one for the same
+                  pod, forming an append-only chain (mirrors the article 1 AIEvidenceRecord
+                  PreviousRecordDigest convention) so tampering or gaps are detectable.
+                pattern: ^[a-f0-9]{64}$
+                type: string
+              revokedAt:
+                description: |-
+                  RevokedAt is set once a revocation was observed and access was retracted
+                  for this pod, used to measure revocation propagation latency (Phase 6)
+                  and to validate the "persistence after revocation" attack scenario (Phase 5).
+                  Part of the SIGNED payload as of Task 06 (see AuthorizationState) --
+                  unlike its pre-Task-06 history, this is now a trust-relevant claim a
+                  verifier can check, not merely informational.
+                format: date-time
+                type: string
+              signature:
+                description: Signature is the Ed25519 signature over this evidence's
+                  payload.
+                properties:
+                  algorithm:
+                    default: ed25519
+                    description: Algorithm identifies the signature scheme.
+                    enum:
+                    - ed25519
+                    type: string
+                  expiresAt:
+                    description: ExpiresAt bounds the evidence's validity window.
+                    format: date-time
+                    type: string
+                  issuedAt:
+                    description: IssuedAt is when this evidence was signed.
+                    format: date-time
+                    type: string
+                  keyIdentifier:
+                    description: KeyIdentifier names the signing key used, for rotation/audit
+                      purposes.
+                    type: string
+                  payloadDigest:
+                    description: PayloadDigest is the SHA-256 hex digest of the canonical
+                      JSON payload that was signed.
+                    pattern: ^[a-f0-9]{64}$
+                    type: string
+                  signature:
+                    description: Signature is the hex-encoded Ed25519 signature over
+                      the canonical payload.
+                    pattern: ^[a-f0-9]{128}$
+                    type: string
+                required:
+                - algorithm
+                - expiresAt
+                - issuedAt
+                - payloadDigest
+                - signature
+                type: object
+            required:
+            - agentIntegrity
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

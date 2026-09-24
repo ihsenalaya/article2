@@ -1,0 +1,262 @@
+=== cleanup any stale objects from a prior attempt ===
+=== 1) creating g1-runner pod (pinned to the worker node, real BPF-LSM) ===
+pod/phase4-exec-test created
+=== waiting for pod to be scheduled ===
+pod_uid=225d4ed3-1963-4f1b-8cda-794c4ae535f5 node_name=vm-a2-cpucampaign-20260813-worker
+=== 2) minting signed decision D (requests enforce + allow=/bin/true via the new ExecPolicyRequest) ===
+=== 3) waiting for the operator to derive RuntimeSecurityPolicy/phase4-exec-test ===
+--- P (as actually derived by the real controller -- NOT hand-patched) ---
+apiVersion: aiops.imperium.io/v1alpha1
+kind: RuntimeSecurityPolicy
+metadata:
+  creationTimestamp: "2026-08-15T18:59:56Z"
+  generation: 1
+  name: phase4-exec-test
+  namespace: workloads
+  ownerReferences:
+  - apiVersion: aiops.imperium.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: AIPlacementDecision
+    name: phase4-exec-test
+    uid: ea3ad9da-3d30-4f23-b312-46155e778a7c
+  resourceVersion: "9937"
+  uid: 477fd7af-dbcb-44b1-8e80-3fd7dd7ed9e5
+spec:
+  agentIntegrity:
+    expectedImageDigest: acrarticle2ebpftm2ogg.azurecr.io/runtime-guard-ebpf-agent@sha256:55f17c7cc182125825dfa3aa8ee7f64a46cc830b340ad7e3cfd7b26b76c93f77
+  binding: {}
+  bpfLock: {}
+  derivation: {}
+  deviceAccess:
+    defaultAction: deny
+  enforcementMode: audit
+  exec:
+    defaultAction: deny
+  fileAccess:
+    defaultAction: deny
+  networkEgress:
+    defaultAction: deny
+  placementDecisionRef:
+    name: phase4-exec-test
+    namespace: workloads
+  targetRef:
+    name: phase4-exec-test
+    namespace: workloads
+status:
+  conditions:
+  - lastTransitionTime: "2026-08-15T18:59:56Z"
+    message: policy schema accepted; agent integrity/enforcement status pending node
+      agent (Phase 4)
+    reason: PolicyAccepted
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-08-15T18:59:57Z"
+    message: 'decision replay detected: decision_id=workloads/phase4-exec-test epoch/version=1/1
+      nonce=1786820395022273565 already recorded for workloads/phase4-exec-test'
+    reason: ReplayDetected
+    status: "False"
+    type: Verified
+  decision: rejected
+  observedGeneration: 1
+  rejectionReason: 'decision replay detected: decision_id=workloads/phase4-exec-test
+    epoch/version=1/1 nonce=1786820395022273565 already recorded for workloads/phase4-exec-test'
+  verificationStatus: Failed
+=== 4) waiting for g1-runner pod to complete ===
+final pod phase: Succeeded
+=== 5) g1-runner's own results ===
+[
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 1,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 1,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 2,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 2,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 3,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 3,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 4,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 4,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 5,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 5,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 6,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 6,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 7,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 7,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 8,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 8,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 9,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 9,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    },
+    {
+        "op": "exec",
+        "condition": "allow",
+        "rep": 10,
+        "target": "/bin/true",
+        "success": true,
+        "errno_is_eperm": false,
+        "side_effect_observed": true
+    },
+    {
+        "op": "exec",
+        "condition": "deny",
+        "rep": 10,
+        "target": "/bin/false",
+        "success": false,
+        "errno_is_eperm": false,
+        "side_effect_observed": false,
+        "raw_error": "exit status 1"
+    }
+]
+=== 6) independent kernel ground truth on the worker (bpftool), for THIS pod's actual cgroup ===
+--- container ID for this pod ---
+6b3f408a00f847be5ea39b24b3f93ece882479167c401acbf0b06001e39e5855 g1-runner

@@ -1,0 +1,22 @@
+# Task 09's controlled exec/file/network workload generator. Busybox
+# base (not distroless, unlike Dockerfile.scale-generator) because the
+# exec operation needs a real external binary to execve() -- /bin/true,
+# which busybox provides. No Kubernetes API dependency, so no api/pkg/
+# internal copied in -- this binary only imports the Go standard library.
+FROM golang:1.21 AS builder
+ARG TARGETOS
+ARG TARGETARCH
+
+WORKDIR /workspace
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+
+COPY cmd/perf-workload/ cmd/perf-workload/
+
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o perf-workload ./cmd/perf-workload
+
+FROM busybox:1.36
+WORKDIR /
+COPY --from=builder /workspace/perf-workload .
+ENTRYPOINT ["sleep", "infinity"]

@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apt-check2
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      hostPID: true
+      nodeSelector:
+        kubernetes.io/hostname: aks-system-21501763-vmss000000
+      containers:
+        - name: check
+          image: ubuntu:24.04
+          securityContext:
+            privileged: true
+          command: ["nsenter", "--target", "1", "--mount", "--uts", "--ipc", "--net", "--pid", "--"]
+          args:
+            - bash
+            - -c
+            - |
+              set -x
+              apt-get update -qq
+              echo "=== 610 driver metapackages (any variant) ==="
+              apt-cache search "nvidia-driver-610" 2>&1
+              echo "=== 610 utils ==="
+              apt-cache search "nvidia-utils-610" 2>&1
+              echo "=== exact madison for driver metapackage candidates ==="
+              for p in nvidia-driver-610 nvidia-driver-610-server nvidia-driver-610-server-open nvidia-driver-610-open; do
+                echo "--- $p ---"
+                apt-cache madison "$p" 2>&1
+              done
+              echo "=== confirm precompiled signed module package version match ==="
+              apt-cache madison linux-modules-nvidia-610-6.8.0-1062-azure-fde 2>&1
+              apt-cache madison linux-modules-nvidia-610-open-6.8.0-1062-azure-fde 2>&1
+              echo "=== is this signed? (Ubuntu archive packages should be signed by Canonical's key already in the machine keyring) ==="
+              apt-get download linux-modules-nvidia-610-open-6.8.0-1062-azure-fde -o Dir::Cache::Archives=/tmp 2>&1
+              dpkg-deb -x /tmp/linux-modules-nvidia-610-open-6.8.0-1062-azure-fde*.deb /tmp/610extract 2>&1
+              find /tmp/610extract -name "*.ko" | head -3

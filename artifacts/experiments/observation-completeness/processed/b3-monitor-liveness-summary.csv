@@ -1,0 +1,2 @@
+max_age_seconds,dead_monitor_heartbeat_unchanged,dead_monitor_flagged_stale,agent_self_healed,recovered_heartbeat_advanced,recovered_flagged_stale
+45,True,true,True,True,false

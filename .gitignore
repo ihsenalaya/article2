@@ -1,0 +1,52 @@
+# Go build artifacts
+bin/
+*.exe
+*.test
+# NOT a blanket "*.out": this project's own experiment/research scripts write
+# raw command-output evidence to stdout/<name>.out by
+# established convention (see e.g. experiments/attacks/task*.sh's record()
+# helpers) — a blanket *.out rule silently excluded ~576 files of already-
+# generated scientific evidence from git across the project's history before
+# this was caught and fixed (2026-08-10). Scoped to the one real Go build
+# artifact that actually used this extension.
+cover.out
+
+# eBPF build artifacts
+*.bpf.o
+ebpf-agent/**/vmlinux.h
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+terraform.tfvars
+
+# Secrets / credentials — never commit
+.env
+.env.*
+# Trailing-glob form matters: trust-anchor-*.env holds private Ed25519 seeds and
+# is NOT matched by ".env" alone.
+*.env
+*.pem
+*.key
+kubeconfig*
+*.kubeconfig
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# kind logs / kubeconfigs generated during experiments
+deploy/kind/*.kubeconfig
+deploy/kind/trust-anchor.env
+deploy/azure/cgpu-vm/.run/
+
+# Locally built helper binaries
+operator/mint-test-decision
+__pycache__/
+*.zip
+results/

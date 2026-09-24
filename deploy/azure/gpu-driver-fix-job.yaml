@@ -1,0 +1,77 @@
+# Fifth driver attempt -- the most promising lead so far (see
+# EXPERIMENTS_LOG.md Phase 9 for the full chain of reasoning):
+#
+# - Ubuntu's archive ships nvidia-driver-610-open (610.43.02) -- the SAME
+#   version number as the NVIDIA CUDA-repo build that failed only because
+#   it was unsigned (DKMS-compiled, rejected by this confidential VM's
+#   secure-boot/lockdown enforcement: "Loading of unsigned module is
+#   rejected").
+# - Crucially, Ubuntu also ships a PRECOMPILED, Canonical-signed kernel
+#   module package for this exact combination:
+#   linux-modules-nvidia-610-open-6.8.0-1062-azure-fde (confirmed via
+#   apt-cache madison, present in noble-updates/restricted).
+# - This combines "new enough to plausibly support this H100 NVL PCI ID
+#   (10de:2321), which 580.173.02 explicitly rejected" with "signed enough
+#   to satisfy secure boot, which the CUDA-repo DKMS build was not."
+#
+# Full purge first for a clean slate (every previous attempt left partial
+# state).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gpu-driver-fix4
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      hostPID: true
+      nodeSelector:
+        kubernetes.azure.com/agentpool: gpuh100
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: fix
+          image: ubuntu:24.04
+          securityContext:
+            privileged: true
+          command: ["nsenter", "--target", "1", "--mount", "--uts", "--ipc", "--net", "--pid", "--"]
+          args:
+            - bash
+            - -c
+            - |
+              set -x
+              export DEBIAN_FRONTEND=noninteractive
+
+              echo "--- full purge ---"
+              PKGS=$(dpkg -l | awk '/^ii/ && ($2 ~ /^nvidia-/ || $2 ~ /^libnvidia-/ || $2 ~ /^linux-modules-nvidia-/ || $2 ~ /^linux-objects-nvidia-/ || $2 ~ /^xserver-xorg-video-nvidia/ || $2 ~ /^cuda-/ || $2 == "screen-resolution-extra") {print $2}')
+              echo "purging: $PKGS"
+              apt-get remove -y --purge $PKGS || true
+              apt-get autoremove -y || true
+              rm -f /etc/apt/sources.list.d/cuda*.list
+              dpkg --purge cuda-keyring || true
+              apt-get update -qq
+
+              echo "--- installing Ubuntu-archive 610-open (precompiled, signed) ---"
+              apt-get install -y \
+                nvidia-driver-610-open \
+                linux-modules-nvidia-610-open-6.8.0-1062-azure-fde
+              echo "APT_EXIT=$?"
+
+              echo "--- installed packages ---"
+              dpkg -l | grep -E "^ii.*nvidia" | grep -v ^rc
+
+              echo "--- reload module ---"
+              rmmod nvidia_uvm nvidia_drm nvidia_modeset nvidia 2>&1 || true
+              modprobe nvidia 2>&1
+
+              echo "--- nvidia-smi ---"
+              nvidia-smi 2>&1
+
+              echo "--- CONFIDENTIAL COMPUTE MODE ---"
+              nvidia-smi conf-compute -f 2>&1
+              nvidia-smi conf-compute -e 2>&1
+
+              echo "--- dmesg tail ---"
+              dmesg | tail -25
